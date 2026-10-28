@@ -1,342 +1,437 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Cellular Guard: Bio Defense</title>
+<html lang="ar" dir="rtl"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Microbe War: Bio Defense</title>
 <style>
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-html, body { margin: 0; height: 100%; background: #07090e; color: #e0e6ed; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; overflow: hidden; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+input{user-select:text;-webkit-user-select:text}
+html,body{margin:0;height:100%;background:#12232a;color:#e6f0ea;font-family:Tahoma,Arial,sans-serif;overflow:hidden}
+.scr{position:fixed;inset:0;background:linear-gradient(135deg,#17303a,#1f3f43);display:none;z-index:5;overflow:auto;padding:10px;text-align:center}
+.scr.on{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.scr.top.on{justify-content:flex-start}
+h1{margin:0}
+h2{margin:0;font-size:20px;color:#c4e6d6}
+.b{background:#3a6462;color:#e6f0ea;border:1px solid #79b1a2;border-radius:10px;padding:8px 16px;font-size:15px;margin:2px;font-family:inherit;cursor:pointer}
+.b:active{background:#4f8a82}
+.b:disabled{opacity:.4}
+.tx{background:#13222a;color:#e6f0ea;border:1px solid #79b1a2;border-radius:10px;padding:8px;font-size:15px;width:160px;text-align:center;outline:none}
+#splash{background:#0d171b;z-index:100}
+#splash h1{font-size:36px;color:#e0463f;letter-spacing:3px;text-shadow:0 0 14px #e0463f55}
+#splash p{margin:0;color:#e0463f;letter-spacing:7px;font-size:15px}
+#menu.on{flex-direction:row;direction:ltr;justify-content:space-around}
+#mside{display:flex;flex-direction:column;gap:8px}
+.sq{width:80px;height:80px;border-radius:14px;background:#2f4f53;border:2px solid #6aa093;color:#e6f0ea;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit;cursor:pointer}
+.sq i{font-size:26px;font-style:normal}
+.sq:active{background:#41706b}
+#mmid{line-height:1.8}
+.card{display:flex;align-items:center;gap:10px;background:#2c474d;border:1px solid #547f75;border-radius:12px;padding:8px 12px;margin:3px auto;font-size:13px;width:94%;max-width:560px;text-align:start}
+#pk{display:flex;gap:12px;direction:ltr}
+.cc{background:#2c474d;border:2px solid #6aa093;border-radius:14px;padding:8px;width:210px;color:#e6f0ea;font-family:inherit;font-size:12px;line-height:1.7;cursor:pointer}
+.cc.sel{background:#41706b;border-color:#b2ecd0}
+#game{position:fixed;inset:0;display:none;flex-direction:row;direction:ltr;background:#12232a}
+#mn{flex:1;display:flex;flex-direction:column;min-width:0}
+#top{height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;font-size:13px;background:#1b343b;white-space:nowrap;overflow:hidden}
+.bat{display:inline-block;width:36px;height:15px;border:2px solid #d3e6dc;border-radius:4px;position:relative;vertical-align:middle}
+.bat b{position:absolute;left:0;top:0;bottom:0;width:100%;background:#4f9a62;transition:width 0.2s}
+.mini{background:#3a6462;color:#e6f0ea;border:1px solid #79b1a2;border-radius:6px;font-size:13px;padding:1px 8px;cursor:pointer}
+#cw{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+#cv{touch-action:none}
+#side{width:90px;padding:4px;display:flex;flex-direction:column;gap:4px;background:#1b343b;justify-content:center}
+.tl{flex:1;max-height:84px;background:#2f4f53;border:2px solid #547f75;border-radius:12px;color:#e6f0ea;font-size:11px;font-family:inherit;line-height:1.3;padding:4px;cursor:pointer}
+.tl.sel{border-color:#b2ecd0;background:#437873}
+</style></head><body>
 
-/* شاشات القوائم بتصميم هادئ وأسطوري */
-.scr { position: fixed; inset: 0; background: radial-gradient(circle at center, #111827 0%, #07090e 70%, #020408 100%); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 10; overflow-y: auto; padding: 20px; text-align: center; }
-.scr.on { display: flex; }
+<div class="scr on" id="splash"><canvas id="lg" width="120" height="80"></canvas><h1>MICROBE WAR</h1><p>BIO DEFENSE</p></div>
 
-/* شعار البداية الأحمر الفخم */
-#splash { background: #020408; z-index: 100; }
-.splash-logo { font-size: 38px; font-weight: bold; color: #ff3344; text-shadow: 0 0 20px rgba(255, 51, 68, 0.8), 0 0 40px rgba(255, 0, 0, 0.4); letter-spacing: 2px; }
-
-h1 { margin: 0; font-size: 28px; color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
-h2 { margin: 0; font-size: 20px; color: #38bdf8; }
-
-.b { background: linear-gradient(135deg, #1e293b, #0f172a); color: #38bdf8; border: 2px solid #38bdf8; border-radius: 12px; padding: 10px 24px; font-size: 16px; font-weight: bold; margin: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: pointer; transition: all 0.2s; font-family: inherit; }
-.b:active { transform: scale(0.96); background: #38bdf8; color: #0f172a; }
-.b.sel { background: #38bdf8; color: #0f172a; box-shadow: 0 0 15px rgba(56, 189, 248, 0.6); }
-
-input { background: #0f172a; color: #38bdf8; border: 2px solid #38bdf8; border-radius: 8px; padding: 10px; font-size: 15px; width: 200px; text-align: center; outline: none; }
-
-.card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; margin: 6px; font-size: 14px; max-width: 550px; text-align: right; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-
-/* واجهة اللعب والعرض */
-#game { position: fixed; inset: 0; display: none; flex-direction: row; direction: ltr; background: #07090e; }
-#cw { flex: 1; display: flex; align-items: center; justify-content: center; }
-#side { width: 130px; padding: 8px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; overflow-y: auto; background: #0f172a; text-align: center; border-left: 2px solid #1e293b; box-shadow: -5px 0 15px rgba(0,0,0,0.5); }
-
-.t { background: #1e293b; color: #38bdf8; border: 2px solid #334155; border-radius: 8px; padding: 8px; font-size: 12px; font-weight: bold; font-family: inherit; cursor: pointer; }
-.t.sel { border-color: #38bdf8; background: #0284c7; color: #fff; }
-</style>
-</head>
-<body>
-
-<!-- شاشة البداية باللون الأحمر الفخم -->
-<div class="scr on" id="splash">
-  <div class="splash-logo">CELLULAR GUARD</div>
-  <div style="color: #94a3b8; font-size: 14px; margin-top: 5px;">BIO-DEFENSE SYSTEM</div>
-</div>
-
-<!-- القائمة الرئيسية -->
 <div class="scr" id="menu">
-  <h1>Cellular Guard</h1>
-  <div style="margin: 10px 0;">
-    <p style="color: #94a3b8; margin-bottom: 8px;">اختر نوع الخلية لهذا الدور:</p>
-    <button class="b" id="ca" onclick="pick('animal')" data-t="animal">خلية حيوانية</button>
-    <button class="b" id="cp" onclick="pick('plant')" data-t="plant">خلية نباتية</button>
-    <div id="cdesc" style="color: #38bdf8; font-size: 13px; margin-top: 6px;"></div>
-  </div>
-  <div style="font-size: 16px; margin: 5px 0;">🪙 رصيد العملات: <b id="mc" style="color:#fbbf24;">0</b> <b id="pb" style="color:#38bdf8;"></b></div>
-  <div>
-    <button class="b" onclick="startBrief()" style="background: #0284c7; color: #fff; font-size: 18px; padding: 12px 30px;">▶ ابدأ اللعب (Play)</button><br>
-    <button class="b" onclick="show('shop')">المتجر والأكواد</button>
-    <button class="b" onclick="show('book')">كتاب التاريخ البيولوجي (Bio-History)</button>
-    <button class="b" onclick="show('set')">الإعدادات</button>
-  </div>
-</div>
+<div id="mside">
+<button class="sq" onclick="show('pick')"><i>▶</i><span data-t="play"></span></button>
+<button class="sq" onclick="show('shop')"><i>🛒</i><span data-t="shop"></span></button>
+<button class="sq" onclick="show('set')"><i>⚙️</i><span data-t="settings"></span></button></div>
+<div id="mmid"><h2>MICROBE WAR</h2><div style="color:#9fcfba">BIO DEFENSE</div>
+<div style="margin-top:14px"><span data-t="level"></span> <b id="lv"></b></div>
+<div>🪙 <b id="mc"></b> <b id="pb"></b></div></div></div>
 
-<!-- متجر وأكواد الملك -->
-<div class="scr" id="shop">
-  <h2>متجر التطويرات والأكواد</h2>
-  <div id="ups" style="width: 100%; max-width: 400px;"></div>
-  <div style="margin-top: 15px;">
-    <input id="cd" placeholder="أدخل كود الـ VIP (مثل MARWAN_PRO)">
-    <button class="b" onclick="promo()">تفعيل الكود</button>
-  </div>
-  <div id="pm" style="color: #fbbf24; font-weight: bold; min-height: 22px; margin-top: 5px;"></div>
-  <button class="b" onclick="show('menu')">رجوع للقائمة</button>
-</div>
+<div class="scr top" id="shop"><h2><span data-t="shop"></span> 🪙 <span id="sc"></span></h2><div id="ups" style="width:100%;max-width:400px"></div>
+<button class="b" onclick="show('menu')" data-t="back"></button></div>
 
-<!-- كتاب التاريخ البيولوجي للأعداء -->
-<div class="scr" id="book">
-  <h2>📚 كتاب التاريخ البيولوجي (Bio-History)</h2>
-  <div id="bk" style="max-height: 60vh; overflow-y: auto; width: 100%; display: flex; flex-direction: column; align-items: center;"></div>
-  <button class="b" onclick="show('menu')">رجوع</button>
-</div>
+<div class="scr top" id="set"><h2 data-t="settings"></h2>
+<div style="margin:6px 0"><span data-t="sound"></span> <input type="range" id="vol" min="0" max="1" step="0.1" style="width:140px" oninput="state.vol=+this.value;save();beep(500,.1)"></div>
+<div style="margin:6px 0"><span data-t="lang"></span> <button class="b" onclick="setLang('ar')">عربي</button><button class="b" onclick="setLang('en')">English</button></div>
+<div style="margin:6px 0"><button class="b" onclick="show('book')" data-t="book"></button></div>
+<h2 data-t="codes"></h2>
+<div><input class="tx" id="cd" data-ph="code"> <button class="b" onclick="promo()" data-t="apply"></button></div>
+<div id="pm" style="color:#ffcc00;margin-top:4px;min-height:18px"></div>
+<button class="b" onclick="show('menu')" data-t="back"></button></div>
 
-<!-- الإعدادات -->
-<div class="scr" id="set">
-  <h2>الإعدادات</h2>
-  <div style="margin: 10px 0;"><span>الصوت:</span> <input type="range" id="vol" min="0" max="1" step="0.1" style="width:140px;" oninput="S.vol=+this.value;save();"></div>
-  <div style="margin: 10px 0;"><span>اللغة:</span> <button class="b" onclick="setLang('ar')">عربي</button><button class="b" onclick="setLang('en')">English</button></div>
-  <button class="b" onclick="show('menu')">رجوع</button>
-</div>
+<div class="scr top" id="book"><h2 data-t="book"></h2><div id="bk" style="width:100%"></div>
+<button class="b" onclick="show('set')" data-t="back"></button></div>
 
-<!-- شاشة النهاية والفوز -->
-<div class="scr" id="res">
-  <h1 id="rt"></h1>
-  <div id="rg" style="font-size: 18px; color:#fbbf24; margin: 10px 0;"></div>
-  <div>
-    <button class="b" onclick="startBrief()">العب مرة أخرى</button>
-    <button class="b" onclick="show('menu')">القائمة الرئيسية</button>
-  </div>
-</div>
+<div class="scr" id="pick"><h2 data-t="choose"></h2><div><span data-t="level"></span> <b id="pl"></b></div><div id="pk"></div>
+<div style="margin-top:10px"><button class="b" onclick="startGame()" style="font-size:18px;padding:8px 24px">▶ <span data-t="play"></span></button></div>
+<button class="b" onclick="show('menu')" data-t="back"></button></div>
 
-<!-- نافذة اللعب الفعلية -->
-<div id="game">
-  <div id="cw"><canvas id="cv" width="800" height="350"></canvas></div>
-  <div id="side">
-    <div style="color:#fbbf24;">🪙 <b id="hc">0</b></div>
-    <div style="color:#38bdf8;">⚡ طاقة: <b id="he">0</b></div>
-    <div style="color:#4ade80;">🛡️ درع: <b id="hw">96%</b></div>
-    <div>المستوى: <b id="hl">1</b></div>
-    <button class="t" id="tb0" onclick="sel(0)">مضاد 1</button>
-    <button class="t" id="tb1" onclick="sel(1)">مضاد 2</button>
-    <button class="t" id="tb2" onclick="sel(2)">مضاد 3</button>
-    <button class="t" onclick="G.paused=!G.paused">إيقاف مؤقت</button>
-    <button class="t" onclick="show('menu')">خروج</button>
-  </div>
-</div>
+<div class="scr" id="res"><h1 id="rt"></h1><div id="rg" style="font-size:18px;color:#ffcc00;margin:8px 0"></div>
+<div><button class="b" id="nx" onclick="nextL()" data-t="next"></button><button class="b" onclick="startGame()" data-t="retry"></button><button class="b" onclick="show('menu')" data-t="menu"></button></div></div>
+
+<div id="game"><div id="mn">
+<div id="top"><span class="bat"><b id="bf"></b></span><b id="hw">96%</b><span>🛡️<b id="hs">100%</b></span><span>🪙<b id="hc">0</b></span><span>⚡<b id="he">0</b></span><span><span data-t="level"></span> <b id="hl">1</b></span><span>🦠<b id="hn">0</b></span>
+<button class="mini" onclick="G.paused=!G.paused">⏸</button><button class="mini" onclick="show('menu')">✖</button></div>
+<div id="cw"><canvas id="cv" width="900" height="420"></canvas></div></div>
+<div id="side">
+<button class="tl" id="tb0" onclick="sel(0)"></button><button class="tl" id="tb1" onclick="sel(1)"></button><button class="tl" id="tb2" onclick="sel(2)"></button><button class="tl" id="tb3" onclick="sel(3)"></button></div></div>
+
 <script>
-// شاشة البداية الحمراء تختفي بعد ثانيتين تلقائياً
+'use strict';
+const TXT={
+ar:{play:"العب",shop:"المتجر",settings:"الإعدادات",book:"📖 كتاب الميكروبات (Book History)",back:"رجوع",sound:"الصوت",lang:"اللغة",codes:"🎁 استبدال الأكواد",choose:"اختر خليتك",
+animal:"الخلية الحيوانية",plant:"الخلية النباتية",
+animalP:"⚡ طاقة أسرع<br>🔫 إطلاق أسرع 20%<br>🛡️ جدار عادي",
+plantP:"🛡️ جدار خلوي قوي ×2.5<br>🌿 الجدار يتجدد<br>⚡ طاقة عادية",
+level:"المستوى",up_wall:"الجدار الخلوي",up_cyto:"قوة السيتوبلازم",up_en:"إنتاج الطاقة",up_wpn:"الأسلحة والمضادات",
+code:"اكتب الكود",apply:"تفعيل",bad:"كود غير صحيح",used:"الكود مستخدم من قبل",pro:"تم فتح حساب PRO!",
+win:"انتصار!",lose:"النواة سقطت!",next:"التالي",retry:"إعادة",menu:"القائمة",weak:"نقطة الضعف",gain:"الكوينز المكتسبة",
+t0:"ميتوكوندريا",t1:"مضاد حيوي",t2:"مضاد فيروسات",t3:"مضاد فطريات",
+n0:"فيروس الإنفلونزا",d0:"كرة صغيرة بنتوءات، سريعة وضعيفة.",
+n1:"فيروس العاقمة",d1:"رأس سداسي وأرجل، سريع جداً.",
+n2:"بكتيريا كروية",d2:"خلايا مستديرة متجمعة، متوسطة القوة.",
+n3:"بكتيريا عصوية",d3:"جسم طويل وسوط، قوية وبطيئة.",
+n4:"الفطر",d4:"بطيء وصلب وصحته كبيرة."},
+en:{play:"Play",shop:"Shop",settings:"Settings",book:"📖 Book History",back:"Back",sound:"Sound",lang:"Language",codes:"🎁 Redeem Codes",choose:"Choose your cell",
+animal:"Animal Cell",plant:"Plant Cell",
+animalP:"⚡ Faster energy<br>🔫 20% faster fire<br>🛡️ Normal wall",
+plantP:"🛡️ Strong cell wall x2.5<br>🌿 Wall regenerates<br>⚡ Normal energy",
+level:"Level",up_wall:"Cell Wall",up_cyto:"Cytoplasm Power",up_en:"Energy Production",up_wpn:"Weapons & Antibiotics",
+code:"Enter code",apply:"Apply",bad:"Invalid code",used:"Code already used",pro:"PRO Account Unlocked!",
+win:"Victory!",lose:"The nucleus fell!",next:"Next",retry:"Retry",menu:"Menu",weak:"Weakness",gain:"Coins earned",
+t0:"Mitochondria",t1:"Antibiotic",t2:"Antiviral",t3:"Antifungal",
+n0:"Flu Virus",d0:"Small spiky ball, fast and weak.",
+n1:"Bacteriophage",d1:"Hexagon head with legs, very fast.",
+n2:"Coccus Bacteria",d2:"Round clustered cells, medium strength.",
+n3:"Bacillus Bacteria",d3:"Long body with a flagellum, strong and slow.",
+n4:"Fungus",d4:"Slow and tough with lots of health."}};
+
+const SAVE_KEY='mw3';
+const state={coins:100,lvl:1,cell:'animal',up:{wall:0,cyto:0,en:0,wpn:0},pro:false,used:[],vol:.5,lang:'ar'};
+const ENEMIES=[
+{hp:30,sp:40,dmg:5,col:'#ee8fa8',weak:2,unlock:1},
+{hp:45,sp:55,dmg:6,col:'#b8a0e6',weak:2,unlock:4},
+{hp:70,sp:28,dmg:8,col:'#e8b866',weak:1,unlock:2},
+{hp:100,sp:24,dmg:11,col:'#ec9a68',weak:1,unlock:8},
+{hp:160,sp:14,dmg:15,col:'#74bddc',weak:3,unlock:14}];
+const TOOLS=[
+{cost:50,col:'#f0c36a',ic:'⚡',dmg:0},
+{cost:75,col:'#8fd19e',ic:'💊',dmg:10},
+{cost:100,col:'#7fd0e0',ic:'💉',dmg:10},
+{cost:125,col:'#e6d37a',ic:'🧪',dmg:14}];
+
+const $=id=>document.getElementById(id);
+const t=k=>TXT[state.lang][k]||k;
+
+try{Object.assign(state,JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'))}catch(e){}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){}}
+
+let audioCtx;
+function beep(f,d){
+ if(!state.vol)return;
+ try{
+  audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.frequency.value=f;g.gain.value=state.vol*.12;
+  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);
+ }catch(e){}
+}
+
+const W=900,H=420,CX=450,CY=210,TAU=Math.PI*2;
+let G=null,last=0;
+
+// زوال شاشة الانترو بسرعة (خلال ثانيتين فقط)
 setTimeout(()=>{
-  let s = document.getElementById('splash');
-  if(s){ s.classList.remove('on'); show('menu'); }
+ const s=$('splash');
+ if(s){
+  s.style.transition='opacity 0.4s';
+  s.style.opacity='0';
+  setTimeout(()=>{ s.classList.remove('on'); show('menu'); }, 400);
+ }
 }, 2000);
 
-let S={lang:'ar',cell:'animal',lvl:1,coins:200,up:{wall:0,cyto:0,en:0,wpn:0},pro:false,used:[],vol:0.5};
-const $=id=>document.getElementById(id);
+function rr(c,x,y,w,h,r){
+ c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
+ c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
+}
+function edgeVal(pl,dx,dy){return pl?Math.max(Math.abs(dx)/185,Math.abs(dy)/165):Math.hypot(dx/195,dy/170)}
 
-function save(){try{localStorage.setItem('cg_save',JSON.stringify(S))}catch(e){}}
-try{Object.assign(S,JSON.parse(localStorage.getItem('cg_save')||'{}'))}catch(e){}
-
-let ac;
-function beep(f,d){
-  if(!S.vol)return;
-  try{
-    ac=ac||new(window.AudioContext||window.webkitAudioContext)();
-    const o=ac.createOscillator(), g=ac.createGain();
-    o.frequency.value=f; g.gain.value=S.vol*0.1;
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime+d);
-  }catch(e){}
+function drawEnemy(c,i,x,y,s,col,ang,tm){
+ c.save();c.translate(x,y);c.rotate(ang||0);
+ const k=s*(1+.05*Math.sin((tm||0)*6+i));c.scale(k,k);
+ c.fillStyle=c.strokeStyle=col||ENEMIES[i].col;c.lineWidth=2.4;c.lineCap='round';
+ if(i==0){
+  c.beginPath();c.arc(0,0,12,0,TAU);c.fill();
+  for(let a=0;a<10;a++){const q=a*.628,x1=Math.cos(q),y1=Math.sin(q);
+   c.beginPath();c.moveTo(x1*12,y1*12);c.lineTo(x1*19,y1*19);c.stroke();
+   c.beginPath();c.arc(x1*20,y1*20,2.6,0,TAU);c.fill()}
+ }else if(i==1){
+  c.beginPath();for(let a=0;a<6;a++){const q=a*1.047;c.lineTo(8+Math.cos(q)*11,Math.sin(q)*11)}c.closePath();c.fill();
+  c.beginPath();c.moveTo(-3,0);c.lineTo(-14,0);c.stroke();
+  c.fillRect(-14,-5,3,10);
+  for(const d of [-9,0,9]){c.beginPath();c.moveTo(-14,0);c.lineTo(-24,d);c.stroke()}
+ }else if(i==2){
+  for(const p of [[-7,-5],[5,-7],[0,3],[-10,6],[10,4]]){c.beginPath();c.arc(p[0],p[1],7,0,TAU);c.fill()}
+ }else if(i==3){
+  c.beginPath();c.ellipse(4,0,17,8,0,0,TAU);c.fill();
+  c.beginPath();c.moveTo(-13,0);c.quadraticCurveTo(-19,-8,-24,0);c.quadraticCurveTo(-29,8,-34,0);c.stroke();
+ }else{
+  c.beginPath();c.arc(0,0,12,0,TAU);c.fill();
+  for(let a=0;a<6;a++){const q=a*1.047+.3,r=22+(a%2)*5,x1=Math.cos(q),y1=Math.sin(q);
+   c.beginPath();c.moveTo(x1*10,y1*10);c.lineTo(x1*r,y1*r);c.stroke();
+   c.beginPath();c.arc(x1*r,y1*r,5,0,TAU);c.fill()}
+ }
+ c.fillStyle='#ffffff55';c.beginPath();c.arc(-2,-4,4,0,TAU);c.fill();
+ c.fillStyle='#2a1a2a';c.beginPath();c.arc(6,-4,2,0,TAU);c.arc(6,4,2,0,TAU);c.fill();
+ c.restore();
 }
 
-const E=[
-  {k:'فيروس كورونا الجيني',desc:'سريع ومرن، يتكاثر بسرعة داخل الخلايا المضيفة.',weak:'مضاد الفيروسات (💉)',ic:'🦠',c:'#ff3366'},
-  {k:'بكتيريا التسمم الشرسة',desc:'متوسطة السرعة وتفرز سموماً تدمر الجدار الخلوي.',weak:'المضاد الحيوي التقليدي (💊)',ic:'🧫',c:'#fbbf24'},
-  {k:'الفطر العملاق المقاوم',desc:'بطيء ولكنه صلب جداً بجدار كيتيني سميك.',weak:'المضاد الكيميائي المتقدم (🧪)',ic:'🍄',c:'#38bdf8'}
-];
-
-const TW=[
-  {cost:40,c:'#4ade80',dmg:12,ic:'💊'},
-  {cost:70,c:'#38bdf8',dmg:15,ic:'💉'},
-  {cost:100,c:'#fbbf24',dmg:20,ic:'🧪'}
-];
-
-const cv=$('cv'), cx=cv.getContext('2d'), W=800, H=350, C0=60, CW=68, RH=70;
-let G=null, last=0;
+const ORG=[[-120,-60,10],[110,-70,12],[-100,75,9],[125,60,11],[0,-112,8],[-20,118,10],[75,98,7],[-145,5,8],[145,0,9]];
+function drawNucleus(c,tm,hr){
+ c.save();
+ const g=c.createRadialGradient(-10,-10,5,0,0,46);g.addColorStop(0,'#c9a2e0');g.addColorStop(1,'#7f5bab');
+ const p=1+.03*Math.sin(tm*3);
+ c.scale(p,p);
+ c.beginPath();c.arc(0,0,44,0,TAU);c.fillStyle=g;c.fill();
+ c.lineWidth=5;c.strokeStyle=hr>.4?'#e4cdf2':'#e0675f';c.stroke();
+ c.fillStyle='#4f3375';c.beginPath();c.arc(-6,-4,15,0,TAU);c.fill();
+ c.fillStyle='#ffffff44';c.beginPath();c.arc(-12,-10,5,0,TAU);c.fill();
+ c.restore();
+}
+function drawBody(c,pl,tm,wr,hr){
+ c.save();
+ if(pl){
+  rr(c,-185,-165,370,330,40);c.fillStyle='#aad8aa';c.fill();
+  c.globalAlpha=.35+.65*wr;c.lineWidth=14;c.strokeStyle='#4f9a62';c.stroke();c.globalAlpha=1;
+  c.lineWidth=3;c.strokeStyle='#d6f0d6';rr(c,-177,-157,354,314,34);c.stroke();
+  c.fillStyle='#9ad4e099';c.beginPath();c.ellipse(-95,70,48,64,.4,0,TAU);c.fill();
+  c.fillStyle='#58a85c';
+  for(const o of ORG){c.beginPath();c.ellipse(o[0],o[1],o[2]+6,o[2]-1,o[0]*.02,0,TAU);c.fill()}
+ }else{
+  c.beginPath();c.ellipse(0,0,195,170,0,0,TAU);c.fillStyle='#ebc6d3';c.fill();
+  c.globalAlpha=.35+.65*wr;c.lineWidth=7;c.strokeStyle='#f8dfe9';c.stroke();c.globalAlpha=1;
+  c.fillStyle='#e8a76f';
+  for(const o of ORG){c.beginPath();c.ellipse(o[0],o[1],o[2]+7,o[2]-2,o[1]*.02,0,TAU);c.fill()}
+  c.strokeStyle='#d99ab0';c.lineWidth=4;c.lineCap='round';
+  for(let k=0;k<3;k++){c.beginPath();c.moveTo(70,-60+k*9);c.quadraticCurveTo(100,-70+k*9,130,-60+k*9);c.stroke()}
+ }
+ drawNucleus(c,tm,hr);
+ c.restore();
+}
 
 function show(id){
-  document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));
-  $('game').style.display=id=='game'?'flex':'none';
-  if(id!='game'&&G) G.run=false;
-  refresh();
+ document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));
+ $('game').style.display=id=='game'?'flex':'none';
+ if(id!='game'&&G)G.run=false;
+ refresh();
 }
 
-function setLang(l){S.lang=l; save(); refresh();}
+function setLang(l){state.lang=l;save();refresh();}
 
 function refresh(){
-  $('ca').classList.toggle('sel',S.cell=='animal');
-  $('cp').classList.toggle('sel',S.cell=='plant');
-  $('cdesc').textContent = S.cell=='animal' ? 'خلية حيوانية: سيتوبلازم مرن وتوليد طاقة أسرع بـ 50%' : 'خلية نباتية: جدار خلوي سميك ودفاعات صلبة جداً';
-  $('mc').textContent=Math.floor(S.coins);
-  $('sc').textContent=Math.floor(S.coins);
-  $('pb').textContent=S.pro?'⭐ VIP PRO':'';
-  $('vol').value=S.vol;
+ document.documentElement.lang=state.lang;
+ document.documentElement.dir=state.lang=='ar'?'rtl':'ltr';
+ document.querySelectorAll('[data-t]').forEach(e=>e.innerHTML=t(e.dataset.t));
+ document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
+ 
+ $('lv').textContent=state.lvl;
+ $('pl').textContent=state.lvl;
+ $('mc').textContent=Math.floor(state.coins);
+ $('sc').textContent=Math.floor(state.coins);
+ $('pb').textContent=state.pro?'⭐ VIP PRO':'';
+ $('vol').value=state.vol;
 
-  let u='';
-  for(const k of ['wall','cyto','en','wpn']){
-    const n=S.up[k];
-    u+=`<div style="margin:5px 0;"><button class="b" style="width:100%;font-size:13px;padding:6px;" ${n>=10?'disabled':''} onclick="buy('${k}')">تطوير ${k} [${n}/10] — ${n>=10?'MAX':(100*(n+1))+' 🪙'}</button></div>`;
-  }
-  $('ups').innerHTML=u;
+ let pkHtml='';
+ for(const type of ['animal','plant']){
+  pkHtml+=`<div class="cc ${state.cell==type?'sel':''}" onclick="pick('${type}')"><b>${t(type)}</b><br>${t(type+'P')}</div>`;
+ }
+ $('pk').innerHTML=pkHtml;
 
-  // كتاب التاريخ البيولوجي للأعداء (Bio-History)
-  let b='';
-  for(const e of E){
-    b+=`<div class="card"><b>${e.ic} ${e.k}</b><br><span style="color:#94a3b8;">${e.desc}</span><br><b>نقطة الضعف:</b> <span style="color:#4ade80;">${e.weak}</span></div>`;
-  }
-  $('bk').innerHTML=b;
+ let u='';
+ for(const k of ['wall','cyto','en','wpn']){
+  const n=state.up[k];
+  u+=`<div style="margin:4px 0"><button class="b" style="width:100%" ${n>=15?'disabled':''} onclick="buy('${k}')">${t('up_'+k)} [${n}/15] — ${n>=15?'MAX':cost(k)+' 🪙'}</button></div>`;
+ }
+ $('ups').innerHTML=u;
+
+ let b='';
+ for(let i=0;i<ENEMIES.length;i++){
+  b+=`<div class="card"><b>${t('n'+i)}</b><br>${t('d'+i)}<br><b>${t('weak')}:</b> ${TOOLS[ENEMIES[i].weak].ic} ${t('t'+ENEMIES[i].weak)}</div>`;
+ }
+ $('bk').innerHTML=b;
+
+ for(let i=0;i<4;i++) $('tb'+i).innerHTML=TOOLS[i].ic+'<br>'+t('t'+i)+'<br>'+TOOLS[i].cost+'⚡';
+ if(G)sel(G.sel);
 }
 
+function cost(k){return Math.round(80*Math.pow(state.up[k]+1,1.5))}
 function buy(k){
-  let costVal = 100*(S.up[k]+1);
-  if(S.up[k]>=10||S.coins<costVal){beep(150,.2);return;}
-  S.coins-=costVal; S.up[k]++; save(); beep(700,.1); refresh();
+ if(state.up[k]>=15||state.coins<cost(k)){beep(150,.2);return}
+ state.coins-=cost(k);state.up[k]++;save();beep(700,.1);refresh();
 }
-
 function promo(){
-  let cd=$('cd').value.trim().toUpperCase();
-  let m='';
-  if(cd==='MARWAN_PRO'||cd==='REV_VIP'||cd.startsWith('PRO-')){
-    if(S.used.includes(cd)){ m='تم استخدام هذا الكود من قبل!'; beep(150,.3); }
-    else{
-      S.used.push(cd); S.coins+=50000; S.pro=true; save();
-      m='تم تفعيل حساب VIP PRO بنجاح +50,000 🪙!'; beep(950,.4);
-    }
-  }else{ m='كود غير صحيح أو منتهي الصلاحية!'; beep(120,.3); }
-  $('pm').textContent=m; refresh();
+ const c=$('cd').value.trim().toUpperCase();
+ if(c==='MARWAN_PRO'||c==='REV_VIP'||c.startsWith('PRO-')){
+  if(state.used.includes(c)){$('pm').textContent=t('used');beep(150,.2)}
+  else{state.used.push(c);state.coins+=50000;state.pro=true;save();$('pm').textContent=t('pro')+' +50,000 🪙';beep(900,.3)}
+ }else{$('pm').textContent=t('bad');beep(120,.2)}
+ refresh();
+}
+function pick(c){state.cell=c;save();refresh()}
+function sel(i){if(G)G.sel=i;for(let j=0;j<4;j++)$('tb'+j).classList.toggle('sel',j==i)}
+
+function startGame(){
+ const pl=state.cell=='plant', L=state.lvl;
+ const maxW=(200+state.up.wall*60)*(pl?2.5:1);
+ G={
+  en:120, wallHp:maxW, maxWall:maxW, nucHp:100, es:[], ts:[], bs:[], sel:0,
+  spTimer:1, left:10+L*2, gain:0, run:true, paused:false, L, pl,
+  hm:1+(L-1)*.05, sm:1+Math.min((L-1)*.003,1.2)
+ };
+ show('game');G.run=true;
+ last=performance.now();requestAnimationFrame(loop);
 }
 
-function pick(c){S.cell=c; save(); refresh();}
-function sel(i){if(G)G.sel=i; for(let j=0;j<3;j++) $('tb'+j).classList.toggle('sel',j==i);}
+function nextL(){state.lvl=Math.min(state.lvl+1,300);save();startGame()}
 
-function startBrief(){
-  const pl=S.cell=='plant', L=S.lvl;
-  const wm=(200+S.up.wall*60)*(pl?2.2:1), n=10+(L*2);
-  G={
-    en:120, wh:wm, wm, es:[], ts:[], bs:[], sel:0, sp:1, left:n, gain:0,
-    run:true, paused:false, L, hm:1+(L-1)*0.04, sm:1+Math.min((L-1)*0.002,1.3)
-  };
-  show('game'); last=performance.now(); requestAnimationFrame(loop);
+function spawn(){
+ const L=G.L, av=L>=14?5:L>=8?4:L>=4?3:L>=2?2:1;
+ const i=Math.floor(Math.random()*av);
+ const a=Math.random()*TAU, r=260;
+ const hp=ENEMIES[i].hp*G.hm;
+ G.es.push({x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r,hp,mx:hp,i});
 }
 
 function end(w){
-  G.run=false; let g=G.gain;
-  if(w){ g+=30+G.L*5; S.lvl=Math.min(S.lvl+1,300); }
-  S.coins+=g; save();
-  $('rt').textContent = w ? '🎉 انتصار بيولوجي عظيم!' : '💥 تم اختراق الخلية وفشل الدفاع!';
-  $('rg').textContent = 'العملات المكتسبة: +'+Math.floor(g)+' 🪙';
-  beep(w?880:110,.5); show('res');
+ G.run=false;let g=G.gain;
+ if(w){g+=30+G.L*5;state.lvl=Math.min(state.lvl+1,300)}
+ state.coins+=g;save();
+ $('rt').textContent=t(w?'win':'lose');
+ $('rg').textContent=t('gain')+': +'+Math.floor(g)+' 🪙';
+ $('nx').style.display=w?'inline-block':'none';
+ beep(w?880:110,.4);show('res');
 }
 
 function upd(dt){
-  G.en += (6 + S.up.en * 1.5) * (S.cell=='animal'?1.5:1) * (S.pro?1.5:1) * dt;
-  G.sp -= dt;
-  if(G.left>0 && G.sp<=0){
-    G.sp = Math.max(0.5, 2.0 - G.L*0.005);
-    G.left--;
-    let i = Math.floor(Math.random()*E.length);
-    let hp = E[i].hp * G.hm;
-    G.es.push({x:W+20, r:Math.floor(Math.random()*5), hp, mx:hp, i});
-  }
+ G.en += (6 + state.up.en * 1.8) * (G.pl?1:1.4) * (state.pro?1.5:1) * dt;
+ G.spTimer -= dt;
+ if(G.left>0 && G.spTimer<=0){
+  G.spTimer = Math.max(0.4, 2.0 - G.L*0.005);
+  G.left--; spawn();
+ }
 
-  for(const e of G.es){
-    if(e.x > C0+12) e.x -= (15+e.i*5) * G.sm * dt;
-    else G.wh -= 8 * dt; // خصم من درع الخلية
+ const cv=$('cv'), cx=cv.getContext('2d');
+ for(const e of G.es){
+  const dx=e.x-CX, dy=e.y-CY, dist=Math.hypot(dx,dy);
+  const ang=Math.atan2(-dy,-dx);
+  if(dist > 45){
+   e.x += Math.cos(ang) * ENEMIES[e.i].sp * G.sm * dt;
+   e.y += Math.sin(ang) * ENEMIES[e.i].sp * G.sm * dt;
   }
-
-  for(const r of G.ts){
-    r.cd -= dt;
-    if(r.cd <= 0 && G.es.some(e=>e.r==r.r && e.x>r.x)){
-      r.cd = 1.0 / (1 + 0.1*S.up.cyto);
-      G.bs.push({x:r.x+15, r:r.r, t:r.t});
-    }
+  
+  if(edgeVal(G.pl, e.x-CX, e.y-CY) <= 1.0 && G.wallHp > 0){
+   G.wallHp -= ENEMIES[e.i].dmg * dt;
   }
-
-  for(const b of G.bs){
-    b.x += 350 * dt;
-    const e = G.es.find(e=>e.r==b.r && Math.abs(e.x-b.x)<16);
-    if(e){
-      e.hp -= TW[b.t].dmg * (1 + 0.15*S.up.wpn) * (e.i==b.t ? 2.5 : 0.6) * (S.pro?1.2:1);
-      b.x = 9999; beep(400+b.t*100,.04);
-    }
+  if(dist <= 48){
+   G.nucHp -= ENEMIES[e.i].dmg * 1.5 * dt;
   }
-  G.bs = G.bs.filter(b=>b.x < W+20);
-  G.gain += G.es.filter(e=>e.hp<=0).length * 3;
-  G.es = G.es.filter(e=>e.hp>0);
+ }
 
-  if(G.wh <= 0) return end(false);
-  if(G.left <= 0 && !G.es.length) return end(true);
+ for(const r of G.ts){
+  r.cd -= dt;
+  if(r.cd <= 0){
+   let target = null, minDist = 999;
+   for(const e of G.es){
+    const d = Math.hypot(e.x-r.x, e.y-r.y);
+    if(d < minDist){ minDist = d; target = e; }
+   }
+   if(target && minDist < 180){
+    r.cd = 0.9 / (1 + 0.12*state.up.cyto);
+    G.bs.push({x:r.x, y:r.y, tx:target.x, ty:target.y, t:r.t, target});
+   }
+  }
+ }
+
+ for(const b of G.bs){
+  const dx=b.tx-b.x, dy=b.ty-b.y, dist=Math.hypot(dx,dy);
+  if(dist < 8 && b.target){
+   b.target.hp -= TOOLS[b.t].dmg * (1 + 0.15*state.up.wpn) * (ENEMIES[b.target.i].weak==b.t ? 2.5 : 0.5);
+   b.dead = true;
+  }else{
+   b.x += (dx/dist) * 320 * dt;
+   b.y += (dy/dist) * 320 * dt;
+  }
+ }
+ G.bs = G.bs.filter(b=>!b.dead && b.x>0 && b.x<W && b.y>0 && b.y<H);
+ G.gain += G.es.filter(e=>e.hp<=0).length * 4;
+ G.es = G.es.filter(e=>e.hp>0);
+
+ if(G.nucHp <= 0) return end(false);
+ if(G.left <= 0 && !G.es.length) return end(true);
 }
 
 function draw(){
-  cx.fillStyle='#07090e'; cx.fillRect(0,0,W,H);
-  
-  // رسم الشبكة الهادئة
-  for(let r=0;r<5;r++) for(let c=0;c<10;c++){
-    cx.fillStyle = (r+c)%2 ? '#0f172a' : '#090d16';
-    cx.fillRect(C0+c*CW, r*RH, CW, RH);
-    cx.strokeStyle = '#1e293b'; cx.lineWidth = 1;
-    cx.strokeRect(C0+c*CW, r*RH, CW, RH);
-  }
+ const cv=$('cv'), cx=cv.getContext('2d');
+ cx.fillStyle='#12232a'; cx.fillRect(0,0,W,H);
+ 
+ cx.save(); cx.translate(CX, CY);
+ drawBody(cx, G.pl, performance.now()/1000, G.wallHp/G.maxWall, G.nucHp/100);
+ cx.restore();
 
-  // رسم جدار الخلية والنسبة المئوية (مثل 96%)
-  const pl = S.cell=='plant';
-  let healthPercent = Math.max(0, Math.ceil(100 * G.wh / G.wm));
-  cx.fillStyle = pl ? '#065f46' : '#9f1239';
-  cx.fillRect(0, 0, pl ? C0 : C0-15, H);
+ for(const r of G.ts){
+  cx.fillStyle='#2f4f53'; cx.beginPath(); cx.arc(r.x, r.y, 16, 0, TAU); cx.fill();
+  cx.strokeStyle=TOOLS[r.t].col; cx.lineWidth=2; cx.stroke();
+  cx.font='16px Arial'; cx.textAlign='center'; cx.fillText(TOOLS[r.t].ic, r.x, r.y+5);
+ }
 
-  // رسم الأبراج والمضادات المتبتة
-  for(const r of G.ts){
-    cx.fillStyle='#0f172a'; cx.beginPath(); cx.arc(r.x, r.y, 20, 0, 7); cx.fill();
-    cx.strokeStyle=TW[r.t].c; cx.lineWidth=2; cx.stroke();
-    cx.font='20px Arial'; cx.textAlign='center'; cx.fillText(TW[r.t].ic, r.x, r.y+7);
-  }
+ for(const e of G.es){
+  const ang=Math.atan2(CY-e.y, CX-e.x);
+  drawEnemy(cx, e.i, e.x, e.y, 0.9, null, ang, performance.now()/1000);
+  cx.fillStyle='#111'; cx.fillRect(e.x-12, e.y-20, 24, 3);
+  cx.fillStyle='#4f9a62'; cx.fillRect(e.x-12, e.y-20, 24*(e.hp/e.mx), 3);
+ }
 
-  // رسم الفيروسات والأعداء بأشكال دقيقة
-  for(const e of G.es){
-    let y = e.r*RH + RH/2;
-    cx.fillStyle = E[e.i].c; cx.beginPath(); cx.arc(e.x, y, 14, 0, 7); cx.fill();
-    cx.font='16px Arial'; cx.textAlign='center'; cx.fillText(E[e.i].ic, e.x, y+6);
-    
-    // شريط صحة العدو
-    cx.fillStyle='#334155'; cx.fillRect(e.x-14, y-22, 28, 4);
-    cx.fillStyle='#4ade80'; cx.fillRect(e.x-14, y-22, 28*(e.hp/e.mx), 4);
-  }
-
-  for(const b of G.bs){
-    cx.fillStyle = TW[b.t].c; cx.beginPath(); cx.arc(b.x, b.r*RH+RH/2, 4, 0, 7); cx.fill();
-  }
+ for(const b of G.bs){
+  cx.fillStyle=TOOLS[b.t].col; cx.beginPath(); cx.arc(b.x, b.y, 4, 0, TAU); cx.fill();
+ }
 }
 
 function hud(){
-  $('hc').textContent = Math.floor(S.coins + G.gain);
-  $('he').textContent = Math.floor(G.en);
-  let hpVal = Math.max(0, Math.ceil(100 * G.wh / G.wm));
-  $('hw').textContent = hpVal + '%';
-  $('hl').textContent = G.L;
+ $('hc').textContent = Math.floor(state.coins + G.gain);
+ $('he').textContent = Math.floor(G.en);
+ $('hw').textContent = Math.max(0, Math.ceil(G.nucHp)) + '%';
+ $('hs').textContent = Math.max(0, Math.ceil(100 * G.wallHp / G.maxWall)) + '%';
+ $('hl').textContent = G.L;
+ $('hn').textContent = G.es.length + G.left;
+ $('bf').style.width = Math.max(0, (G.nucHp)) + '%';
 }
 
 function loop(now){
-  if(!G || !G.run) return;
-  let dt = Math.min((now-last)/1000, 0.05); last=now;
-  if(!G.paused) upd(dt);
-  draw(); hud();
-  requestAnimationFrame(loop);
+ if(!G || !G.run) return;
+ const dt = Math.min((now-last)/1000, 0.05); last=now;
+ if(!G.paused) upd(dt);
+ draw(); hud();
+ requestAnimationFrame(loop);
 }
 
+const cv=$('cv');
 cv.addEventListener('pointerdown', ev=>{
-  if(!G || !G.run || G.paused) return;
-  const r = cv.getBoundingClientRect();
-  const x = (ev.clientX-r.left)*W/r.width, y = (ev.clientY-r.top)*H/r.height;
-  const c = Math.floor((x-C0)/CW), row = Math.floor(y/RH);
-  if(c<0 || c>9 || row<0 || row>4) return;
-  if(G.ts.some(o=>o.c==c && o.r==row)) return;
-  const k = TW[G.sel];
-  if(G.en < k.cost){ beep(150,.2); return; }
-  G.en -= k.cost;
-  G.ts.push({x: C0 + c*CW + CW/2, y: row*RH + RH/2, c, r: row, t: G.sel, cd: 0});
-  beep(500,.05);
+ if(!G || !G.run || G.paused) return;
+ const r = cv.getBoundingClientRect();
+ const x = (ev.clientX-r.left)*W/r.width, y = (ev.clientY-r.top)*H/r.height;
+ if(Math.hypot(x-CX, y-CY) < 45) return;
+ if(G.ts.some(o=>Math.hypot(o.x-x, o.y-y) < 28)) return;
+ const k = TOOLS[G.sel];
+ if(G.en < k.cost){ beep(150,.2); return; }
+ G.en -= k.cost;
+ G.ts.push({x, y, t: G.sel, cd: 0});
+ beep(500,.05);
 });
-</script>
-</body>
-</html>
+
+refresh();
+</script></body></html>
