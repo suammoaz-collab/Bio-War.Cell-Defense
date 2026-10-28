@@ -1,437 +1,3282 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl"><head><meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<title>Microbe War: Bio Defense</title>
-<style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
-input{user-select:text;-webkit-user-select:text}
-html,body{margin:0;height:100%;background:#12232a;color:#e6f0ea;font-family:Tahoma,Arial,sans-serif;overflow:hidden}
-.scr{position:fixed;inset:0;background:linear-gradient(135deg,#17303a,#1f3f43);display:none;z-index:5;overflow:auto;padding:10px;text-align:center}
-.scr.on{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
-.scr.top.on{justify-content:flex-start}
-h1{margin:0}
-h2{margin:0;font-size:20px;color:#c4e6d6}
-.b{background:#3a6462;color:#e6f0ea;border:1px solid #79b1a2;border-radius:10px;padding:8px 16px;font-size:15px;margin:2px;font-family:inherit;cursor:pointer}
-.b:active{background:#4f8a82}
-.b:disabled{opacity:.4}
-.tx{background:#13222a;color:#e6f0ea;border:1px solid #79b1a2;border-radius:10px;padding:8px;font-size:15px;width:160px;text-align:center;outline:none}
-#splash{background:#0d171b;z-index:100}
-#splash h1{font-size:36px;color:#e0463f;letter-spacing:3px;text-shadow:0 0 14px #e0463f55}
-#splash p{margin:0;color:#e0463f;letter-spacing:7px;font-size:15px}
-#menu.on{flex-direction:row;direction:ltr;justify-content:space-around}
-#mside{display:flex;flex-direction:column;gap:8px}
-.sq{width:80px;height:80px;border-radius:14px;background:#2f4f53;border:2px solid #6aa093;color:#e6f0ea;font-size:13px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-family:inherit;cursor:pointer}
-.sq i{font-size:26px;font-style:normal}
-.sq:active{background:#41706b}
-#mmid{line-height:1.8}
-.card{display:flex;align-items:center;gap:10px;background:#2c474d;border:1px solid #547f75;border-radius:12px;padding:8px 12px;margin:3px auto;font-size:13px;width:94%;max-width:560px;text-align:start}
-#pk{display:flex;gap:12px;direction:ltr}
-.cc{background:#2c474d;border:2px solid #6aa093;border-radius:14px;padding:8px;width:210px;color:#e6f0ea;font-family:inherit;font-size:12px;line-height:1.7;cursor:pointer}
-.cc.sel{background:#41706b;border-color:#b2ecd0}
-#game{position:fixed;inset:0;display:none;flex-direction:row;direction:ltr;background:#12232a}
-#mn{flex:1;display:flex;flex-direction:column;min-width:0}
-#top{height:32px;display:flex;align-items:center;gap:9px;padding:0 8px;font-size:13px;background:#1b343b;white-space:nowrap;overflow:hidden}
-.bat{display:inline-block;width:36px;height:15px;border:2px solid #d3e6dc;border-radius:4px;position:relative;vertical-align:middle}
-.bat b{position:absolute;left:0;top:0;bottom:0;width:100%;background:#4f9a62;transition:width 0.2s}
-.mini{background:#3a6462;color:#e6f0ea;border:1px solid #79b1a2;border-radius:6px;font-size:13px;padding:1px 8px;cursor:pointer}
-#cw{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
-#cv{touch-action:none}
-#side{width:90px;padding:4px;display:flex;flex-direction:column;gap:4px;background:#1b343b;justify-content:center}
-.tl{flex:1;max-height:84px;background:#2f4f53;border:2px solid #547f75;border-radius:12px;color:#e6f0ea;font-size:11px;font-family:inherit;line-height:1.3;padding:4px;cursor:pointer}
-.tl.sel{border-color:#b2ecd0;background:#437873}
-</style></head><body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cellular Guard - 2D Bio Tower Defense</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1a2333;
+      --border-color: #243247;
+      --accent-crimson: #ef4444;
+      --accent-crimson-glow: rgba(239, 68, 68, 0.45);
+      --accent-crimson-dark: #991b1b;
+      --neon-cyan: #38bdf8;
+      --neon-cyan-glow: rgba(56, 189, 248, 0.35);
+      --neon-amber: #f59e0b;
+      --neon-purple: #c084fc;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --cell-plant: #10b981;
+      --cell-plant-glow: rgba(16, 185, 129, 0.3);
+      --cell-animal: #38bdf8;
+      --cell-animal-glow: rgba(56, 189, 248, 0.3);
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
 
-<div class="scr on" id="splash"><canvas id="lg" width="120" height="80"></canvas><h1>MICROBE WAR</h1><p>BIO DEFENSE</p></div>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-<div class="scr" id="menu">
-<div id="mside">
-<button class="sq" onclick="show('pick')"><i>▶</i><span data-t="play"></span></button>
-<button class="sq" onclick="show('shop')"><i>🛒</i><span data-t="shop"></span></button>
-<button class="sq" onclick="show('set')"><i>⚙️</i><span data-t="settings"></span></button></div>
-<div id="mmid"><h2>MICROBE WAR</h2><div style="color:#9fcfba">BIO DEFENSE</div>
-<div style="margin-top:14px"><span data-t="level"></span> <b id="lv"></b></div>
-<div>🪙 <b id="mc"></b> <b id="pb"></b></div></div></div>
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-family);
+    }
 
-<div class="scr top" id="shop"><h2><span data-t="shop"></span> 🪙 <span id="sc"></span></h2><div id="ups" style="width:100%;max-width:400px"></div>
-<button class="b" onclick="show('menu')" data-t="back"></button></div>
+    #app-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #111828 0%, #0b0f19 100%);
+    }
 
-<div class="scr top" id="set"><h2 data-t="settings"></h2>
-<div style="margin:6px 0"><span data-t="sound"></span> <input type="range" id="vol" min="0" max="1" step="0.1" style="width:140px" oninput="state.vol=+this.value;save();beep(500,.1)"></div>
-<div style="margin:6px 0"><span data-t="lang"></span> <button class="b" onclick="setLang('ar')">عربي</button><button class="b" onclick="setLang('en')">English</button></div>
-<div style="margin:6px 0"><button class="b" onclick="show('book')" data-t="book"></button></div>
-<h2 data-t="codes"></h2>
-<div><input class="tx" id="cd" data-ph="code"> <button class="b" onclick="promo()" data-t="apply"></button></div>
-<div id="pm" style="color:#ffcc00;margin-top:4px;min-height:18px"></div>
-<button class="b" onclick="show('menu')" data-t="back"></button></div>
+    /* Screen Management */
+    .screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      z-index: 10;
+      padding: 16px;
+    }
 
-<div class="scr top" id="book"><h2 data-t="book"></h2><div id="bk" style="width:100%"></div>
-<button class="b" onclick="show('set')" data-t="back"></button></div>
+    .screen.active {
+      display: flex;
+      opacity: 1;
+    }
 
-<div class="scr" id="pick"><h2 data-t="choose"></h2><div><span data-t="level"></span> <b id="pl"></b></div><div id="pk"></div>
-<div style="margin-top:10px"><button class="b" onclick="startGame()" style="font-size:18px;padding:8px 24px">▶ <span data-t="play"></span></button></div>
-<button class="b" onclick="show('menu')" data-t="back"></button></div>
+    /* Splash Screen */
+    #splash-screen {
+      z-index: 100;
+      background: radial-gradient(circle at center, #26050b 0%, #150205 60%, #0b0f19 100%);
+      cursor: pointer;
+    }
 
-<div class="scr" id="res"><h1 id="rt"></h1><div id="rg" style="font-size:18px;color:#ffcc00;margin:8px 0"></div>
-<div><button class="b" id="nx" onclick="nextL()" data-t="next"></button><button class="b" onclick="startGame()" data-t="retry"></button><button class="b" onclick="show('menu')" data-t="menu"></button></div></div>
+    .splash-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
 
-<div id="game"><div id="mn">
-<div id="top"><span class="bat"><b id="bf"></b></span><b id="hw">96%</b><span>🛡️<b id="hs">100%</b></span><span>🪙<b id="hc">0</b></span><span>⚡<b id="he">0</b></span><span><span data-t="level"></span> <b id="hl">1</b></span><span>🦠<b id="hn">0</b></span>
-<button class="mini" onclick="G.paused=!G.paused">⏸</button><button class="mini" onclick="show('menu')">✖</button></div>
-<div id="cw"><canvas id="cv" width="900" height="420"></canvas></div></div>
-<div id="side">
-<button class="tl" id="tb0" onclick="sel(0)"></button><button class="tl" id="tb1" onclick="sel(1)"></button><button class="tl" id="tb2" onclick="sel(2)"></button><button class="tl" id="tb3" onclick="sel(3)"></button></div></div>
+    .splash-icon {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(239,68,68,0.2) 0%, rgba(11,15,25,0.8) 70%);
+      border: 2px solid var(--accent-crimson);
+      box-shadow: 0 0 35px var(--accent-crimson-glow), inset 0 0 25px var(--accent-crimson-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      animation: pulseGlow 2s infinite ease-in-out;
+    }
 
-<script>
-'use strict';
-const TXT={
-ar:{play:"العب",shop:"المتجر",settings:"الإعدادات",book:"📖 كتاب الميكروبات (Book History)",back:"رجوع",sound:"الصوت",lang:"اللغة",codes:"🎁 استبدال الأكواد",choose:"اختر خليتك",
-animal:"الخلية الحيوانية",plant:"الخلية النباتية",
-animalP:"⚡ طاقة أسرع<br>🔫 إطلاق أسرع 20%<br>🛡️ جدار عادي",
-plantP:"🛡️ جدار خلوي قوي ×2.5<br>🌿 الجدار يتجدد<br>⚡ طاقة عادية",
-level:"المستوى",up_wall:"الجدار الخلوي",up_cyto:"قوة السيتوبلازم",up_en:"إنتاج الطاقة",up_wpn:"الأسلحة والمضادات",
-code:"اكتب الكود",apply:"تفعيل",bad:"كود غير صحيح",used:"الكود مستخدم من قبل",pro:"تم فتح حساب PRO!",
-win:"انتصار!",lose:"النواة سقطت!",next:"التالي",retry:"إعادة",menu:"القائمة",weak:"نقطة الضعف",gain:"الكوينز المكتسبة",
-t0:"ميتوكوندريا",t1:"مضاد حيوي",t2:"مضاد فيروسات",t3:"مضاد فطريات",
-n0:"فيروس الإنفلونزا",d0:"كرة صغيرة بنتوءات، سريعة وضعيفة.",
-n1:"فيروس العاقمة",d1:"رأس سداسي وأرجل، سريع جداً.",
-n2:"بكتيريا كروية",d2:"خلايا مستديرة متجمعة، متوسطة القوة.",
-n3:"بكتيريا عصوية",d3:"جسم طويل وسوط، قوية وبطيئة.",
-n4:"الفطر",d4:"بطيء وصلب وصحته كبيرة."},
-en:{play:"Play",shop:"Shop",settings:"Settings",book:"📖 Book History",back:"Back",sound:"Sound",lang:"Language",codes:"🎁 Redeem Codes",choose:"Choose your cell",
-animal:"Animal Cell",plant:"Plant Cell",
-animalP:"⚡ Faster energy<br>🔫 20% faster fire<br>🛡️ Normal wall",
-plantP:"🛡️ Strong cell wall x2.5<br>🌿 Wall regenerates<br>⚡ Normal energy",
-level:"Level",up_wall:"Cell Wall",up_cyto:"Cytoplasm Power",up_en:"Energy Production",up_wpn:"Weapons & Antibiotics",
-code:"Enter code",apply:"Apply",bad:"Invalid code",used:"Code already used",pro:"PRO Account Unlocked!",
-win:"Victory!",lose:"The nucleus fell!",next:"Next",retry:"Retry",menu:"Menu",weak:"Weakness",gain:"Coins earned",
-t0:"Mitochondria",t1:"Antibiotic",t2:"Antiviral",t3:"Antifungal",
-n0:"Flu Virus",d0:"Small spiky ball, fast and weak.",
-n1:"Bacteriophage",d1:"Hexagon head with legs, very fast.",
-n2:"Coccus Bacteria",d2:"Round clustered cells, medium strength.",
-n3:"Bacillus Bacteria",d3:"Long body with a flagellum, strong and slow.",
-n4:"Fungus",d4:"Slow and tough with lots of health."}};
+    .splash-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fff;
+      text-transform: uppercase;
+      text-shadow: 0 0 20px var(--accent-crimson), 0 0 40px var(--accent-crimson-dark);
+      margin-bottom: 12px;
+    }
 
-const SAVE_KEY='mw3';
-const state={coins:100,lvl:1,cell:'animal',up:{wall:0,cyto:0,en:0,wpn:0},pro:false,used:[],vol:.5,lang:'ar'};
-const ENEMIES=[
-{hp:30,sp:40,dmg:5,col:'#ee8fa8',weak:2,unlock:1},
-{hp:45,sp:55,dmg:6,col:'#b8a0e6',weak:2,unlock:4},
-{hp:70,sp:28,dmg:8,col:'#e8b866',weak:1,unlock:2},
-{hp:100,sp:24,dmg:11,col:'#ec9a68',weak:1,unlock:8},
-{hp:160,sp:14,dmg:15,col:'#74bddc',weak:3,unlock:14}];
-const TOOLS=[
-{cost:50,col:'#f0c36a',ic:'⚡',dmg:0},
-{cost:75,col:'#8fd19e',ic:'💊',dmg:10},
-{cost:100,col:'#7fd0e0',ic:'💉',dmg:10},
-{cost:125,col:'#e6d37a',ic:'🧪',dmg:14}];
+    .splash-subtitle {
+      font-size: clamp(0.75rem, 2vw, 1.1rem);
+      letter-spacing: 6px;
+      color: #fca5a5;
+      text-transform: uppercase;
+      opacity: 0.85;
+    }
 
-const $=id=>document.getElementById(id);
-const t=k=>TXT[state.lang][k]||k;
+    .splash-tip {
+      margin-top: 40px;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      color: var(--text-muted);
+      opacity: 0.6;
+      animation: fadeInOut 1.5s infinite ease-in-out;
+    }
 
-try{Object.assign(state,JSON.parse(localStorage.getItem(SAVE_KEY)||'{}'))}catch(e){}
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(state))}catch(e){}}
+    @keyframes pulseGlow {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 30px var(--accent-crimson-glow), inset 0 0 20px var(--accent-crimson-glow);
+      }
+      50% {
+        transform: scale(1.06);
+        box-shadow: 0 0 50px rgba(239,68,68,0.7), inset 0 0 30px rgba(239,68,68,0.5);
+      }
+    }
 
-let audioCtx;
-function beep(f,d){
- if(!state.vol)return;
- try{
-  audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-  o.frequency.value=f;g.gain.value=state.vol*.12;
-  o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d);
- }catch(e){}
-}
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.9; }
+    }
 
-const W=900,H=420,CX=450,CY=210,TAU=Math.PI*2;
-let G=null,last=0;
+    /* Main Menu Screen */
+    #menu-screen {
+      background: radial-gradient(circle at 30% 30%, #151d30 0%, #0b0f19 80%);
+      padding: clamp(12px, 3vh, 32px);
+    }
 
-// زوال شاشة الانترو بسرعة (خلال ثانيتين فقط)
-setTimeout(()=>{
- const s=$('splash');
- if(s){
-  s.style.transition='opacity 0.4s';
-  s.style.opacity='0';
-  setTimeout(()=>{ s.classList.remove('on'); show('menu'); }, 400);
- }
-}, 2000);
+    .menu-layout {
+      width: 100%;
+      max-width: 900px;
+      height: 100%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
 
-function rr(c,x,y,w,h,r){
- c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);
- c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
-}
-function edgeVal(pl,dx,dy){return pl?Math.max(Math.abs(dx)/185,Math.abs(dy)/165):Math.hypot(dx/195,dy/170)}
+    .menu-branding {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+    }
 
-function drawEnemy(c,i,x,y,s,col,ang,tm){
- c.save();c.translate(x,y);c.rotate(ang||0);
- const k=s*(1+.05*Math.sin((tm||0)*6+i));c.scale(k,k);
- c.fillStyle=c.strokeStyle=col||ENEMIES[i].col;c.lineWidth=2.4;c.lineCap='round';
- if(i==0){
-  c.beginPath();c.arc(0,0,12,0,TAU);c.fill();
-  for(let a=0;a<10;a++){const q=a*.628,x1=Math.cos(q),y1=Math.sin(q);
-   c.beginPath();c.moveTo(x1*12,y1*12);c.lineTo(x1*19,y1*19);c.stroke();
-   c.beginPath();c.arc(x1*20,y1*20,2.6,0,TAU);c.fill()}
- }else if(i==1){
-  c.beginPath();for(let a=0;a<6;a++){const q=a*1.047;c.lineTo(8+Math.cos(q)*11,Math.sin(q)*11)}c.closePath();c.fill();
-  c.beginPath();c.moveTo(-3,0);c.lineTo(-14,0);c.stroke();
-  c.fillRect(-14,-5,3,10);
-  for(const d of [-9,0,9]){c.beginPath();c.moveTo(-14,0);c.lineTo(-24,d);c.stroke()}
- }else if(i==2){
-  for(const p of [[-7,-5],[5,-7],[0,3],[-10,6],[10,4]]){c.beginPath();c.arc(p[0],p[1],7,0,TAU);c.fill()}
- }else if(i==3){
-  c.beginPath();c.ellipse(4,0,17,8,0,0,TAU);c.fill();
-  c.beginPath();c.moveTo(-13,0);c.quadraticCurveTo(-19,-8,-24,0);c.quadraticCurveTo(-29,8,-34,0);c.stroke();
- }else{
-  c.beginPath();c.arc(0,0,12,0,TAU);c.fill();
-  for(let a=0;a<6;a++){const q=a*1.047+.3,r=22+(a%2)*5,x1=Math.cos(q),y1=Math.sin(q);
-   c.beginPath();c.moveTo(x1*10,y1*10);c.lineTo(x1*r,y1*r);c.stroke();
-   c.beginPath();c.arc(x1*r,y1*r,5,0,TAU);c.fill()}
- }
- c.fillStyle='#ffffff55';c.beginPath();c.arc(-2,-4,4,0,TAU);c.fill();
- c.fillStyle='#2a1a2a';c.beginPath();c.arc(6,-4,2,0,TAU);c.arc(6,4,2,0,TAU);c.fill();
- c.restore();
-}
+    .badge-vip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.05));
+      border: 1px solid rgba(245, 158, 11, 0.6);
+      color: #fde68a;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+    }
 
-const ORG=[[-120,-60,10],[110,-70,12],[-100,75,9],[125,60,11],[0,-112,8],[-20,118,10],[75,98,7],[-145,5,8],[145,0,9]];
-function drawNucleus(c,tm,hr){
- c.save();
- const g=c.createRadialGradient(-10,-10,5,0,0,46);g.addColorStop(0,'#c9a2e0');g.addColorStop(1,'#7f5bab');
- const p=1+.03*Math.sin(tm*3);
- c.scale(p,p);
- c.beginPath();c.arc(0,0,44,0,TAU);c.fillStyle=g;c.fill();
- c.lineWidth=5;c.strokeStyle=hr>.4?'#e4cdf2':'#e0675f';c.stroke();
- c.fillStyle='#4f3375';c.beginPath();c.arc(-6,-4,15,0,TAU);c.fill();
- c.fillStyle='#ffffff44';c.beginPath();c.arc(-12,-10,5,0,TAU);c.fill();
- c.restore();
-}
-function drawBody(c,pl,tm,wr,hr){
- c.save();
- if(pl){
-  rr(c,-185,-165,370,330,40);c.fillStyle='#aad8aa';c.fill();
-  c.globalAlpha=.35+.65*wr;c.lineWidth=14;c.strokeStyle='#4f9a62';c.stroke();c.globalAlpha=1;
-  c.lineWidth=3;c.strokeStyle='#d6f0d6';rr(c,-177,-157,354,314,34);c.stroke();
-  c.fillStyle='#9ad4e099';c.beginPath();c.ellipse(-95,70,48,64,.4,0,TAU);c.fill();
-  c.fillStyle='#58a85c';
-  for(const o of ORG){c.beginPath();c.ellipse(o[0],o[1],o[2]+6,o[2]-1,o[0]*.02,0,TAU);c.fill()}
- }else{
-  c.beginPath();c.ellipse(0,0,195,170,0,0,TAU);c.fillStyle='#ebc6d3';c.fill();
-  c.globalAlpha=.35+.65*wr;c.lineWidth=7;c.strokeStyle='#f8dfe9';c.stroke();c.globalAlpha=1;
-  c.fillStyle='#e8a76f';
-  for(const o of ORG){c.beginPath();c.ellipse(o[0],o[1],o[2]+7,o[2]-2,o[1]*.02,0,TAU);c.fill()}
-  c.strokeStyle='#d99ab0';c.lineWidth=4;c.lineCap='round';
-  for(let k=0;k<3;k++){c.beginPath();c.moveTo(70,-60+k*9);c.quadraticCurveTo(100,-70+k*9,130,-60+k*9);c.stroke()}
- }
- drawNucleus(c,tm,hr);
- c.restore();
-}
+    .menu-title {
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: 3px;
+      line-height: 1.1;
+      color: #ffffff;
+      text-transform: uppercase;
+      text-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+      margin-bottom: 8px;
+    }
 
-function show(id){
- document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id==id));
- $('game').style.display=id=='game'?'flex':'none';
- if(id!='game'&&G)G.run=false;
- refresh();
-}
+    .menu-title span {
+      color: var(--neon-cyan);
+    }
 
-function setLang(l){state.lang=l;save();refresh();}
+    .menu-tagline {
+      font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+      color: var(--text-muted);
+      letter-spacing: 2px;
+      margin-bottom: 24px;
+    }
 
-function refresh(){
- document.documentElement.lang=state.lang;
- document.documentElement.dir=state.lang=='ar'?'rtl':'ltr';
- document.querySelectorAll('[data-t]').forEach(e=>e.innerHTML=t(e.dataset.t));
- document.querySelectorAll('[data-ph]').forEach(e=>e.placeholder=t(e.dataset.ph));
- 
- $('lv').textContent=state.lvl;
- $('pl').textContent=state.lvl;
- $('mc').textContent=Math.floor(state.coins);
- $('sc').textContent=Math.floor(state.coins);
- $('pb').textContent=state.pro?'⭐ VIP PRO':'';
- $('vol').value=state.vol;
+    .menu-stats-bar {
+      display: flex;
+      gap: 16px;
+      background: rgba(17, 24, 39, 0.7);
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
 
- let pkHtml='';
- for(const type of ['animal','plant']){
-  pkHtml+=`<div class="cc ${state.cell==type?'sel':''}" onclick="pick('${type}')"><b>${t(type)}</b><br>${t(type+'P')}</div>`;
- }
- $('pk').innerHTML=pkHtml;
+    .stat-pill {
+      display: flex;
+      flex-direction: column;
+    }
 
- let u='';
- for(const k of ['wall','cyto','en','wpn']){
-  const n=state.up[k];
-  u+=`<div style="margin:4px 0"><button class="b" style="width:100%" ${n>=15?'disabled':''} onclick="buy('${k}')">${t('up_'+k)} [${n}/15] — ${n>=15?'MAX':cost(k)+' 🪙'}</button></div>`;
- }
- $('ups').innerHTML=u;
+    .stat-pill-label {
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
 
- let b='';
- for(let i=0;i<ENEMIES.length;i++){
-  b+=`<div class="card"><b>${t('n'+i)}</b><br>${t('d'+i)}<br><b>${t('weak')}:</b> ${TOOLS[ENEMIES[i].weak].ic} ${t('t'+ENEMIES[i].weak)}</div>`;
- }
- $('bk').innerHTML=b;
+    .stat-pill-value {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
 
- for(let i=0;i<4;i++) $('tb'+i).innerHTML=TOOLS[i].ic+'<br>'+t('t'+i)+'<br>'+TOOLS[i].cost+'⚡';
- if(G)sel(G.sel);
-}
+    .menu-buttons {
+      flex: 0 0 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      justify-content: center;
+    }
 
-function cost(k){return Math.round(80*Math.pow(state.up[k]+1,1.5))}
-function buy(k){
- if(state.up[k]>=15||state.coins<cost(k)){beep(150,.2);return}
- state.coins-=cost(k);state.up[k]++;save();beep(700,.1);refresh();
-}
-function promo(){
- const c=$('cd').value.trim().toUpperCase();
- if(c==='MARWAN_PRO'||c==='REV_VIP'||c.startsWith('PRO-')){
-  if(state.used.includes(c)){$('pm').textContent=t('used');beep(150,.2)}
-  else{state.used.push(c);state.coins+=50000;state.pro=true;save();$('pm').textContent=t('pro')+' +50,000 🪙';beep(900,.3)}
- }else{$('pm').textContent=t('bad');beep(120,.2)}
- refresh();
-}
-function pick(c){state.cell=c;save();refresh()}
-function sel(i){if(G)G.sel=i;for(let j=0;j<4;j++)$('tb'+j).classList.toggle('sel',j==i)}
+    /* Common Button Styles */
+    .btn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 14px 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-main);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
 
-function startGame(){
- const pl=state.cell=='plant', L=state.lvl;
- const maxW=(200+state.up.wall*60)*(pl?2.5:1);
- G={
-  en:120, wallHp:maxW, maxWall:maxW, nucHp:100, es:[], ts:[], bs:[], sel:0,
-  spTimer:1, left:10+L*2, gain:0, run:true, paused:false, L, pl,
-  hm:1+(L-1)*.05, sm:1+Math.min((L-1)*.003,1.2)
- };
- show('game');G.run=true;
- last=performance.now();requestAnimationFrame(loop);
-}
+    .btn:hover, .btn:focus-visible {
+      background: var(--bg-surface-elevated);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px var(--neon-cyan-glow);
+      transform: translateY(-2px);
+    }
 
-function nextL(){state.lvl=Math.min(state.lvl+1,300);save();startGame()}
+    .btn:active {
+      transform: translateY(1px);
+    }
 
-function spawn(){
- const L=G.L, av=L>=14?5:L>=8?4:L>=4?3:L>=2?2:1;
- const i=Math.floor(Math.random()*av);
- const a=Math.random()*TAU, r=260;
- const hp=ENEMIES[i].hp*G.hm;
- G.es.push({x:CX+Math.cos(a)*r,y:CY+Math.sin(a)*r,hp,mx:hp,i});
-}
+    .btn-primary {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
 
-function end(w){
- G.run=false;let g=G.gain;
- if(w){g+=30+G.L*5;state.lvl=Math.min(state.lvl+1,300)}
- state.coins+=g;save();
- $('rt').textContent=t(w?'win':'lose');
- $('rg').textContent=t('gain')+': +'+Math.floor(g)+' 🪙';
- $('nx').style.display=w?'inline-block':'none';
- beep(w?880:110,.4);show('res');
-}
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      box-shadow: 0 8px 25px rgba(56, 189, 248, 0.5);
+    }
 
-function upd(dt){
- G.en += (6 + state.up.en * 1.8) * (G.pl?1:1.4) * (state.pro?1.5:1) * dt;
- G.spTimer -= dt;
- if(G.left>0 && G.spTimer<=0){
-  G.spTimer = Math.max(0.4, 2.0 - G.L*0.005);
-  G.left--; spawn();
- }
+    .btn-crimson {
+      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+      border-color: var(--accent-crimson);
+      box-shadow: 0 6px 20px var(--accent-crimson-glow);
+    }
 
- const cv=$('cv'), cx=cv.getContext('2d');
- for(const e of G.es){
-  const dx=e.x-CX, dy=e.y-CY, dist=Math.hypot(dx,dy);
-  const ang=Math.atan2(-dy,-dx);
-  if(dist > 45){
-   e.x += Math.cos(ang) * ENEMIES[e.i].sp * G.sm * dt;
-   e.y += Math.sin(ang) * ENEMIES[e.i].sp * G.sm * dt;
-  }
-  
-  if(edgeVal(G.pl, e.x-CX, e.y-CY) <= 1.0 && G.wallHp > 0){
-   G.wallHp -= ENEMIES[e.i].dmg * dt;
-  }
-  if(dist <= 48){
-   G.nucHp -= ENEMIES[e.i].dmg * 1.5 * dt;
-  }
- }
+    .btn-crimson:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6);
+    }
 
- for(const r of G.ts){
-  r.cd -= dt;
-  if(r.cd <= 0){
-   let target = null, minDist = 999;
-   for(const e of G.es){
-    const d = Math.hypot(e.x-r.x, e.y-r.y);
-    if(d < minDist){ minDist = d; target = e; }
-   }
-   if(target && minDist < 180){
-    r.cd = 0.9 / (1 + 0.12*state.up.cyto);
-    G.bs.push({x:r.x, y:r.y, tx:target.x, ty:target.y, t:r.t, target});
-   }
-  }
- }
+    .btn-gold {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      border-color: var(--neon-amber);
+      color: #fef3c7;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    }
 
- for(const b of G.bs){
-  const dx=b.tx-b.x, dy=b.ty-b.y, dist=Math.hypot(dx,dy);
-  if(dist < 8 && b.target){
-   b.target.hp -= TOOLS[b.t].dmg * (1 + 0.15*state.up.wpn) * (ENEMIES[b.target.i].weak==b.t ? 2.5 : 0.5);
-   b.dead = true;
-  }else{
-   b.x += (dx/dist) * 320 * dt;
-   b.y += (dy/dist) * 320 * dt;
-  }
- }
- G.bs = G.bs.filter(b=>!b.dead && b.x>0 && b.x<W && b.y>0 && b.y<H);
- G.gain += G.es.filter(e=>e.hp<=0).length * 4;
- G.es = G.es.filter(e=>e.hp>0);
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
+    }
 
- if(G.nucHp <= 0) return end(false);
- if(G.left <= 0 && !G.es.length) return end(true);
-}
+    /* Cell Selection Screen */
+    #cell-select-screen {
+      background: radial-gradient(circle at center, #111a2d 0%, #0b0f19 80%);
+      padding: clamp(10px, 2.5vh, 24px);
+    }
 
-function draw(){
- const cv=$('cv'), cx=cv.getContext('2d');
- cx.fillStyle='#12232a'; cx.fillRect(0,0,W,H);
- 
- cx.save(); cx.translate(CX, CY);
- drawBody(cx, G.pl, performance.now()/1000, G.wallHp/G.maxWall, G.nucHp/100);
- cx.restore();
+    .cell-select-wrapper {
+      width: 100%;
+      max-width: 920px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
 
- for(const r of G.ts){
-  cx.fillStyle='#2f4f53'; cx.beginPath(); cx.arc(r.x, r.y, 16, 0, TAU); cx.fill();
-  cx.strokeStyle=TOOLS[r.t].col; cx.lineWidth=2; cx.stroke();
-  cx.font='16px Arial'; cx.textAlign='center'; cx.fillText(TOOLS[r.t].ic, r.x, r.y+5);
- }
+    .section-header {
+      text-align: center;
+      margin-bottom: clamp(10px, 2vh, 20px);
+    }
 
- for(const e of G.es){
-  const ang=Math.atan2(CY-e.y, CX-e.x);
-  drawEnemy(cx, e.i, e.x, e.y, 0.9, null, ang, performance.now()/1000);
-  cx.fillStyle='#111'; cx.fillRect(e.x-12, e.y-20, 24, 3);
-  cx.fillStyle='#4f9a62'; cx.fillRect(e.x-12, e.y-20, 24*(e.hp/e.mx), 3);
- }
+    .section-title {
+      font-size: clamp(1.4rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
 
- for(const b of G.bs){
-  cx.fillStyle=TOOLS[b.t].col; cx.beginPath(); cx.arc(b.x, b.y, 4, 0, TAU); cx.fill();
- }
-}
+    .section-subtitle {
+      font-size: clamp(0.75rem, 1.5vw, 0.95rem);
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
 
-function hud(){
- $('hc').textContent = Math.floor(state.coins + G.gain);
- $('he').textContent = Math.floor(G.en);
- $('hw').textContent = Math.max(0, Math.ceil(G.nucHp)) + '%';
- $('hs').textContent = Math.max(0, Math.ceil(100 * G.wallHp / G.maxWall)) + '%';
- $('hl').textContent = G.L;
- $('hn').textContent = G.es.length + G.left;
- $('bf').style.width = Math.max(0, (G.nucHp)) + '%';
-}
+    .cell-cards-row {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      justify-content: center;
+      flex: 1;
+      max-height: 380px;
+    }
 
-function loop(now){
- if(!G || !G.run) return;
- const dt = Math.min((now-last)/1000, 0.05); last=now;
- if(!G.paused) upd(dt);
- draw(); hud();
- requestAnimationFrame(loop);
-}
+    .cell-card {
+      flex: 1;
+      max-width: 420px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-color);
+      border-radius: 16px;
+      padding: clamp(14px, 2.5vw, 22px);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.25s ease;
+      overflow: hidden;
+    }
 
-const cv=$('cv');
-cv.addEventListener('pointerdown', ev=>{
- if(!G || !G.run || G.paused) return;
- const r = cv.getBoundingClientRect();
- const x = (ev.clientX-r.left)*W/r.width, y = (ev.clientY-r.top)*H/r.height;
- if(Math.hypot(x-CX, y-CY) < 45) return;
- if(G.ts.some(o=>Math.hypot(o.x-x, o.y-y) < 28)) return;
- const k = TOOLS[G.sel];
- if(G.en < k.cost){ beep(150,.2); return; }
- G.en -= k.cost;
- G.ts.push({x, y, t: G.sel, cd: 0});
- beep(500,.05);
-});
+    .cell-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: transparent;
+      transition: background 0.3s ease;
+    }
 
-refresh();
-</script></body></html>
+    .cell-card.plant-card:hover, .cell-card.plant-card.selected {
+      border-color: var(--cell-plant);
+      box-shadow: 0 0 25px var(--cell-plant-glow);
+      background: #0f201e;
+    }
+
+    .cell-card.plant-card::before {
+      background: var(--cell-plant);
+    }
+
+    .cell-card.animal-card:hover, .cell-card.animal-card.selected {
+      border-color: var(--cell-animal);
+      box-shadow: 0 0 25px var(--cell-animal-glow);
+      background: #0f1d2c;
+    }
+
+    .cell-card.animal-card::before {
+      background: var(--cell-animal);
+    }
+
+    .cell-card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .cell-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      border: 1px solid var(--border-color);
+      background: #0b0f19;
+    }
+
+    .plant-card .cell-avatar {
+      border-color: var(--cell-plant);
+      color: var(--cell-plant);
+      box-shadow: 0 0 12px var(--cell-plant-glow);
+    }
+
+    .animal-card .cell-avatar {
+      border-color: var(--cell-animal);
+      color: var(--cell-animal);
+      box-shadow: 0 0 12px var(--cell-animal-glow);
+    }
+
+    .cell-name-box h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .cell-name-box span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .cell-stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+      flex: 1;
+    }
+
+    .cell-stat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .perk-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      line-height: 1.3;
+      color: #94a3b8;
+      border-left: 3px solid var(--neon-cyan);
+      margin-top: 4px;
+    }
+
+    .plant-card .perk-tag {
+      border-left-color: var(--cell-plant);
+    }
+
+    .cell-select-actions {
+      display: flex;
+      gap: 16px;
+      width: 100%;
+      max-width: 500px;
+      margin-top: 14px;
+    }
+
+    /* In-Game HUD & Field Layout */
+    #game-screen {
+      padding: 0;
+      justify-content: stretch;
+      align-items: stretch;
+    }
+
+    .game-layout {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Top HUD Bar */
+    .top-hud {
+      height: 52px;
+      background: rgba(11, 15, 25, 0.95);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+    }
+
+    .hud-left, .hud-center, .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .health-status-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .health-meter-wrap {
+      width: 130px;
+      height: 14px;
+      background: #1e293b;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid #334155;
+      position: relative;
+    }
+
+    .health-meter-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, #ef4444 0%, #10b981 100%);
+      border-radius: 7px;
+      transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .health-text {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: #ffffff;
+      min-width: 45px;
+    }
+
+    .health-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+    }
+
+    .resource-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--neon-cyan);
+    }
+
+    .wave-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: var(--neon-amber);
+    }
+
+    .hud-btn {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .hud-btn:hover {
+      border-color: var(--neon-cyan);
+      background: var(--bg-surface-elevated);
+    }
+
+    /* Main Field (Canvas View) */
+    .field-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: calc(100% - 116px);
+      overflow: hidden;
+      background-color: var(--bg-dark);
+    }
+
+    #gameCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+    }
+
+    /* Bottom Control Bar / Tower Dock */
+    .bottom-dock {
+      height: 64px;
+      background: rgba(11, 15, 25, 0.96);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 20;
+    }
+
+    .towers-selection {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 4px 0;
+    }
+
+    .tower-card-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 130px;
+    }
+
+    .tower-card-btn:hover, .tower-card-btn.active {
+      border-color: var(--neon-cyan);
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 15px var(--neon-cyan-glow);
+    }
+
+    .tower-card-btn.cannot-afford {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: #334155;
+    }
+
+    .tower-icon-glyph {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      background: #0b0f19;
+    }
+
+    .tower-card-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .tower-card-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .tower-card-cost {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--neon-cyan);
+    }
+
+    .dock-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-wave-call {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      border: 1px solid #10b981;
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    .btn-wave-call:hover {
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+      transform: translateY(-1px);
+    }
+
+    /* Modal Screens / Overlays */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      padding: 16px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-window {
+      width: 100%;
+      max-width: 780px;
+      max-height: 90vh;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: modalPop 0.25s ease-out;
+    }
+
+    @keyframes modalPop {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .modal-header h2 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #fff;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+
+    .modal-close-btn:hover {
+      background: var(--accent-crimson);
+      color: #fff;
+      border-color: var(--accent-crimson);
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Encyclopedia Tabs & Entries */
+    .encyclo-tabs {
+      display: flex;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+
+    .encyclo-tab-btn {
+      padding: 8px 16px;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .encyclo-tab-btn.active {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    .encyclo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .encyclo-card {
+      background: #0d1322;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      position: relative;
+    }
+
+    .encyclo-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .encyclo-card-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .encyclo-card-class {
+      font-size: 0.7rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .threat-tag {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .threat-low { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .threat-med { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .threat-high { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .threat-boss { background: rgba(192, 132, 252, 0.2); color: #e9d5ff; border: 1px solid #c084fc; }
+
+    .encyclo-lore {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .encyclo-weakness {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: #fca5a5;
+    }
+
+    /* Promo Code Styling */
+    .promo-input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .input-field {
+      flex: 1;
+      background: #0d1322;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px var(--neon-cyan-glow);
+    }
+
+    .promo-hints {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .promo-status-msg {
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .promo-status-msg.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #34d399;
+    }
+
+    .promo-status-msg.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+    }
+
+    /* Tower Inspector Floating Card */
+    #tower-inspector {
+      position: absolute;
+      bottom: 74px;
+      right: 18px;
+      width: 250px;
+      background: rgba(17, 24, 39, 0.95);
+      border: 1px solid var(--neon-cyan);
+      border-radius: 14px;
+      padding: 14px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      z-index: 30;
+      backdrop-filter: blur(8px);
+    }
+
+    .inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .inspector-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .inspector-stats {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .inspector-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      text-transform: uppercase;
+      color: #fff;
+    }
+
+    .btn-upgrade {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      border-color: #38bdf8;
+    }
+
+    .btn-sell {
+      background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+      border-color: #ef4444;
+    }
+
+    /* Landscape Banner Helper for small screens */
+    @media (max-height: 480px) {
+      .top-hud { height: 44px; }
+      .bottom-dock { height: 54px; }
+      .btn { padding: 8px 14px; font-size: 0.85rem; }
+      .menu-title { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app-container">
+
+    <!-- 1. SPLASH SCREEN (2s Crimson Glowing Intro) -->
+    <div id="splash-screen" class="screen active">
+      <div class="splash-content">
+        <div class="splash-icon">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <circle cx="12" cy="11" r="3"/>
+            <path d="m9 17 2-2 4 4"/>
+          </svg>
+        </div>
+        <h1 class="splash-title">Cellular Guard</h1>
+        <p class="splash-subtitle">Microscopic Defense Protocol</p>
+        <p class="splash-tip">INITIALIZING CELLULAR MEMBRANE...</p>
+      </div>
+    </div>
+
+    <!-- 2. MAIN MENU -->
+    <div id="menu-screen" class="screen">
+      <div class="menu-layout">
+        <div class="menu-branding">
+          <div id="vip-status-badge" class="badge-vip" style="display: none;">
+            ★ VIP BIO-COMMANDER ACTIVE
+          </div>
+          <h1 class="menu-title">CELLULAR <span>GUARD</span></h1>
+          <p class="menu-tagline">Biological Pathogen Defense Simulation</p>
+          <div class="menu-stats-bar">
+            <div class="stat-pill">
+              <span class="stat-pill-label">ATP Reserve</span>
+              <span id="menu-atp-count" class="stat-pill-value">1,200</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-label">Highest Wave</span>
+              <span id="menu-high-wave" class="stat-pill-value">Wave 1</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-pill-label">Threats Logged</span>
+              <span class="stat-pill-value">6 Types</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="menu-buttons">
+          <button id="btn-play-trigger" class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Play Defense
+          </button>
+          <button id="btn-encyclo-trigger" class="btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Encyclopedia (Bio-History)
+          </button>
+          <button id="btn-promo-trigger" class="btn btn-gold">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Promo Codes
+          </button>
+          <button id="btn-settings-trigger" class="btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. CELL SELECTION SCREEN (Plant vs Animal) -->
+    <div id="cell-select-screen" class="screen">
+      <div class="cell-select-wrapper">
+        <div class="section-header">
+          <h2 class="section-title">Select Host Cell Architecture</h2>
+          <p class="section-subtitle">Choose your cellular biological archetype before deploying defenses</p>
+        </div>
+
+        <div class="cell-cards-row">
+          <!-- Plant Cell Card -->
+          <div id="card-plant" class="cell-card plant-card selected" data-type="plant">
+            <div class="cell-card-header">
+              <div class="cell-avatar">🌿</div>
+              <div class="cell-name-box">
+                <h3>Plant Cell</h3>
+                <span>Cellulose Fortification</span>
+              </div>
+            </div>
+            <div class="cell-stats-list">
+              <div class="cell-stat-item">
+                <span>Membrane Durability</span>
+                <strong style="color: #34d399;">150% (Max)</strong>
+              </div>
+              <div class="cell-stat-item">
+                <span>Energy Generation</span>
+                <strong style="color: #94a3b8;">Normal (10/s)</strong>
+              </div>
+              <div class="perk-tag">
+                <strong>Cell Wall Armor:</strong> Immune breaches cause 30% less membrane damage.
+              </div>
+              <div class="perk-tag">
+                <strong>Chloroplast Reserves:</strong> Regenerates 1% membrane health per cleared wave.
+              </div>
+            </div>
+          </div>
+
+          <!-- Animal Cell Card -->
+          <div id="card-animal" class="cell-card animal-card" data-type="animal">
+            <div class="cell-card-header">
+              <div class="cell-avatar">⚡</div>
+              <div class="cell-name-box">
+                <h3>Animal Cell</h3>
+                <span>Cytoplasmic Mobility</span>
+              </div>
+            </div>
+            <div class="cell-stats-list">
+              <div class="cell-stat-item">
+                <span>Membrane Durability</span>
+                <strong style="color: #94a3b8;">100% (Standard)</strong>
+              </div>
+              <div class="cell-stat-item">
+                <span>Energy Generation</span>
+                <strong style="color: #38bdf8;">Overcharged (+40%)</strong>
+              </div>
+              <div class="perk-tag">
+                <strong>Mitochondrial Surge:</strong> Organelles fire 20% faster across the entire cytoplasm.
+              </div>
+              <div class="perk-tag">
+                <strong>Phagocyte Discount:</strong> Macrophage and Acid launchers cost 15% less ATP.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cell-select-actions">
+          <button id="btn-back-to-menu" class="btn" style="flex: 0 0 120px;">Back</button>
+          <button id="btn-confirm-cell" class="btn btn-primary" style="flex: 1;">Deploy Selected Cell</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. ACTIVE GAME SCREEN -->
+    <div id="game-screen" class="screen">
+      <div class="game-layout">
+        <!-- Top HUD -->
+        <header class="top-hud">
+          <div class="hud-left">
+            <div class="health-status-box">
+              <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">MEMBRANE:</span>
+              <div class="health-meter-wrap">
+                <div id="health-bar-fill" class="health-meter-fill"></div>
+              </div>
+              <span id="health-percent-text" class="health-text">100%</span>
+              <span id="health-status-badge" class="health-badge">NOMINAL</span>
+            </div>
+          </div>
+
+          <div class="hud-center">
+            <div class="resource-box">
+              <span>⚡ ATP:</span>
+              <span id="game-atp-val">350</span>
+            </div>
+            <div class="wave-box">
+              <span id="game-wave-val">Wave 1</span>
+            </div>
+          </div>
+
+          <div class="hud-right">
+            <button id="btn-game-speed" class="hud-btn" title="Toggle Speed">1x</button>
+            <button id="btn-game-pause" class="hud-btn" title="Pause Game">⏸</button>
+            <button id="btn-game-exit" class="hud-btn" title="Surrender to Menu">Quit</button>
+          </div>
+        </header>
+
+        <!-- Canvas Defense Field -->
+        <div class="field-container" id="field-wrapper">
+          <canvas id="gameCanvas"></canvas>
+
+          <!-- Floating Tower Inspector -->
+          <div id="tower-inspector">
+            <div class="inspector-header">
+              <span id="insp-name" class="inspector-title">Ribosome Cannon</span>
+              <span id="insp-lvl" style="font-size:0.75rem; color:var(--neon-cyan); font-weight:800;">LVL 1</span>
+            </div>
+            <div class="inspector-stats">
+              <div>Damage: <strong id="insp-dmg" style="color:#fff;">15</strong></div>
+              <div>Range: <strong id="insp-range" style="color:#fff;">110</strong></div>
+              <div>Rate: <strong id="insp-rate" style="color:#fff;">1.2/s</strong></div>
+              <div>Kills: <strong id="insp-kills" style="color:#fff;">0</strong></div>
+            </div>
+            <div class="inspector-actions">
+              <button id="btn-insp-upgrade" class="btn-small btn-upgrade">Up (50⚡)</button>
+              <button id="btn-insp-sell" class="btn-small btn-sell">Sell (30⚡)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Tower Dock -->
+        <footer class="bottom-dock">
+          <div class="towers-selection">
+            <!-- Tower 1: Ribosome Darts -->
+            <div class="tower-card-btn active" data-tower="ribosome">
+              <div class="tower-icon-glyph" style="color: #38bdf8;">🎯</div>
+              <div class="tower-card-info">
+                <span class="tower-card-name">Ribosome</span>
+                <span class="tower-card-cost">100 ATP</span>
+              </div>
+            </div>
+
+            <!-- Tower 2: Lysosome Acid -->
+            <div class="tower-card-btn" data-tower="lysosome">
+              <div class="tower-icon-glyph" style="color: #f59e0b;">🧪</div>
+              <div class="tower-card-info">
+                <span class="tower-card-name">Lysosome</span>
+                <span class="tower-card-cost">150 ATP</span>
+              </div>
+            </div>
+
+            <!-- Tower 3: Antibody Freezer -->
+            <div class="tower-card-btn" data-tower="antibody">
+              <div class="tower-icon-glyph" style="color: #c084fc;">❄️</div>
+              <div class="tower-card-info">
+                <span class="tower-card-name">Antibody</span>
+                <span class="tower-card-cost">175 ATP</span>
+              </div>
+            </div>
+
+            <!-- Tower 4: Macrophage Devourer -->
+            <div class="tower-card-btn" data-tower="macrophage">
+              <div class="tower-icon-glyph" style="color: #ef4444;">🛡️</div>
+              <div class="tower-card-info">
+                <span class="tower-card-name">Macrophage</span>
+                <span class="tower-card-cost">250 ATP</span>
+              </div>
+            </div>
+
+            <!-- Tower 5: Mitochondria Booster -->
+            <div class="tower-card-btn" data-tower="booster">
+              <div class="tower-icon-glyph" style="color: #10b981;">⚡</div>
+              <div class="tower-card-info">
+                <span class="tower-card-name">Booster</span>
+                <span class="tower-card-cost">200 ATP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dock-actions">
+            <button id="btn-call-wave" class="btn-wave-call">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              <span>Next Wave</span>
+            </button>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <!-- 5. ENCYCLOPEDIA (BIO-HISTORY) MODAL -->
+    <div id="encyclo-modal" class="modal-overlay">
+      <div class="modal-window">
+        <div class="modal-header">
+          <h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--neon-cyan)" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Microscopic Bio-History & Threat Registry
+          </h2>
+          <button class="modal-close-btn" data-close="encyclo-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="encyclo-tabs">
+            <button class="encyclo-tab-btn active" data-tab="pathogens">Pathogens (Viruses, Bacteria, Fungi)</button>
+            <button class="encyclo-tab-btn" data-tab="defenses">Cellular Organelles</button>
+          </div>
+
+          <!-- Pathogens Grid -->
+          <div id="tab-pathogens" class="encyclo-grid">
+            <!-- 1. Bacteriophage T4 -->
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Bacteriophage T4</div>
+                  <div class="encyclo-card-class">Viral Infiltrator</div>
+                </div>
+                <span class="threat-tag threat-low">Tier 1</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Possesses an icosahedral protein capsid and crystalline tail pins. Highly agile, swarming in dense clusters to breach the phospholipid bilayer.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Rapid Peptide Darts (Ribosome Synthesizer punctures light protein coat).
+              </div>
+            </div>
+
+            <!-- 2. Streptococcus Coccus -->
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Streptococcus Coccus</div>
+                  <div class="encyclo-card-class">Gram-Positive Bacteria</div>
+                </div>
+                <span class="threat-tag threat-med">Tier 2</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Forms continuous spherical bead chains. Reinforced with thick peptidoglycan cell walls that resist basic kinetic micro-projectiles.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Acidic Enzymes (Lysosome Cannon dissolves capsule with hydrolytic enzymes).
+              </div>
+            </div>
+
+            <!-- 3. Bacillus Anthracis -->
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Bacillus Flagellate</div>
+                  <div class="encyclo-card-class">Endospore Bacterium</div>
+                </div>
+                <span class="threat-tag threat-med">Tier 2</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Cylindrical rod bacterium propelled by rapid rotating flagella filaments. Moderate speed, high resilience against single-target strikes.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Immobilization (Antibody cross-linkers tangle flagella, allowing sustained bombardment).
+              </div>
+            </div>
+
+            <!-- 4. Aspergillus Spore -->
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Aspergillus Bio-Spore</div>
+                  <div class="encyclo-card-class">Fungal Macro-Pathogen</div>
+                </div>
+                <span class="threat-tag threat-high">Tier 3</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Heavy mycelial fungal spore surrounded by a dense chitin exoskeleton. Explodes into secondary micro-spores upon membrane destabilization.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Phagocytic Disintegration (Macrophage heavy engulfment obliterates chitin).
+              </div>
+            </div>
+
+            <!-- 5. SARS-CoV Apex -->
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Coronaspike Enveloped</div>
+                  <div class="encyclo-card-class">Crown Glycoprotein Virus</div>
+                </div>
+                <span class="threat-tag threat-high">Tier 3</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Spherical virion studded with dense trimeric spike glycoproteins. Sneaks past early cell recognition filters with high kinetic evasion.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Dual Neutralization (Antibody binding + Acidic Lysosome breakdown).
+              </div>
+            </div>
+
+            <!-- 6. Apex Cytomegalo-Titan (Boss) -->
+            <div class="encyclo-card" style="border-color: #c084fc;">
+              <div class="encyclo-card-header">
+                <div>
+                  <div class="encyclo-card-title">Apex Cytomegalo-Titan</div>
+                  <div class="encyclo-card-class">Omega Super-Pathogen</div>
+                </div>
+                <span class="threat-tag threat-boss">BOSS</span>
+              </div>
+              <p class="lore-text encyclo-lore">
+                Colossal hybridized macro-infection capable of shielding trailing pathogens. Massive hitpoints and immune suppressing bio-auras.
+              </p>
+              <div class="encyclo-weakness">
+                <strong>Weakness:</strong> Concentrated Macrophage beams and Mitochondria-boosted continuous fire.
+              </div>
+            </div>
+          </div>
+
+          <!-- Defenses Grid -->
+          <div id="tab-defenses" class="encyclo-grid" style="display: none;">
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div class="encyclo-card-title">Ribosome Synthesizer</div>
+                <span class="threat-tag threat-low">Rapid Fire</span>
+              </div>
+              <p class="encyclo-lore">Translates mRNA into high-velocity peptide darts. Ideal for shredding rapid viral swarms.</p>
+            </div>
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div class="encyclo-card-title">Lysosome Acid Cannon</div>
+                <span class="threat-tag threat-med">Splash Acid</span>
+              </div>
+              <p class="encyclo-lore">Catapults acidic digestive enzyme globules that melt dense bacterial peptidoglycan layers in an area.</p>
+            </div>
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div class="encyclo-card-title">Antibody Emitter</div>
+                <span class="threat-tag threat-low">Slow & Trap</span>
+              </div>
+              <p class="encyclo-lore">Synthesizes immunoglobulin proteins that bind pathogen receptors, slowing target movement by up to 55%.</p>
+            </div>
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div class="encyclo-card-title">Macrophage Sentry</div>
+                <span class="threat-tag threat-high">Heavy Sentry</span>
+              </div>
+              <p class="encyclo-lore">Phagocytic behemoth that unleashes devastating engulfment pulses against high-threat fungal spores and bosses.</p>
+            </div>
+            <div class="encyclo-card">
+              <div class="encyclo-card-header">
+                <div class="encyclo-card-title">Mitochondria Supercharger</div>
+                <span class="threat-tag threat-med">Buff Aura</span>
+              </div>
+              <p class="encyclo-lore">The cellular powerhouse. Radiates ATP resonance that increases the attack frequency of adjacent organelles by 35%.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. PROMO CODES MODAL -->
+    <div id="promo-modal" class="modal-overlay">
+      <div class="modal-window" style="max-width: 520px;">
+        <div class="modal-header">
+          <h2>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--neon-amber)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Terminal Authorization Codes
+          </h2>
+          <button class="modal-close-btn" data-close="promo-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Enter authorized biological clearance codes to unlock VIP commander credentials, massive ATP reserves, and cellular perks.
+          </p>
+
+          <div class="promo-input-row">
+            <input type="text" id="promo-code-input" class="input-field" placeholder="ENTER CODE (e.g. MARWAN_PRO)" maxlength="20">
+            <button id="btn-redeem-code" class="btn btn-gold" style="width: auto; padding: 10px 20px;">Redeem</button>
+          </div>
+
+          <div id="promo-status" class="promo-status-msg"></div>
+
+          <div class="promo-hints">
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Available Secret Codes:</span>
+            <div style="font-size: 0.8rem; color: #fde68a;">
+              • <strong>MARWAN_PRO</strong> — Unlocks VIP Commander Status & +5,000 ATP
+            </div>
+            <div style="font-size: 0.8rem; color: #93c5fd;">
+              • <strong>CYTO2026</strong> — Injects +2,500 ATP Energy
+            </div>
+            <div style="font-size: 0.8rem; color: #6ee7b7;">
+              • <strong>CELLWALL</strong> — Fortifies Membrane with +30% Armor
+            </div>
+            <div style="font-size: 0.8rem; color: #c4b5fd;">
+              • <strong>MITOCHONDRIA</strong> — Powerhouse Surge (+3,000 ATP)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay">
+      <div class="modal-window" style="max-width: 480px;">
+        <div class="modal-header">
+          <h2>Audio & Sensory Settings</h2>
+          <button class="modal-close-btn" data-close="settings-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Bio-Acoustic Sound FX</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Synthesizer laser, splash, and wave audio</div>
+            </div>
+            <input type="checkbox" id="setting-sfx" checked style="width: 22px; height: 22px; accent-color: var(--neon-cyan); cursor: pointer;">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Ambient Drone Music</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Microscopic cosmic background resonance</div>
+            </div>
+            <input type="checkbox" id="setting-bgm" checked style="width: 22px; height: 22px; accent-color: var(--neon-cyan); cursor: pointer;">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 700; font-size: 0.95rem;">Membrane Shock Particles</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Fluid bio-sparks on hit</div>
+            </div>
+            <input type="checkbox" id="setting-particles" checked style="width: 22px; height: 22px; accent-color: var(--neon-cyan); cursor: pointer;">
+          </div>
+
+          <div style="border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: 6px;">
+            <button id="btn-reset-data" class="btn btn-crimson" style="padding: 10px;">Reset Simulation Data</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. GAME OVER / VICTORY OVERLAY -->
+    <div id="game-over-modal" class="modal-overlay">
+      <div class="modal-window" style="max-width: 480px; text-align: center;">
+        <div class="modal-header" style="justify-content: center;">
+          <h2 id="end-title" style="color: var(--accent-crimson);">MEMBRANE BREACHED</h2>
+        </div>
+        <div class="modal-body" style="align-items: center; gap: 14px;">
+          <div id="end-icon" style="font-size: 3rem;">⚠️</div>
+          <p id="end-desc" style="font-size: 0.9rem; color: var(--text-muted);">
+            Pathogens overwhelmed the cytoplasm defenses and ruptured the core cellular organelle.
+          </p>
+
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 12px; width: 100%; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">WAVES SURVIVED</div>
+              <div id="end-waves" style="font-size: 1.2rem; font-weight: 800; color: #fff;">Wave 6</div>
+            </div>
+            <div>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">PATHOGENS PURGED</div>
+              <div id="end-kills" style="font-size: 1.2rem; font-weight: 800; color: var(--neon-cyan);">48</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; width: 100%; margin-top: 10px;">
+            <button id="btn-end-retry" class="btn btn-primary" style="flex: 1;">Restart Mission</button>
+            <button id="btn-end-menu" class="btn" style="flex: 1;">Main Menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* =====================================================================
+       CELLULAR GUARD - PURE JS 2D TOWER DEFENSE ENGINE
+       ===================================================================== */
+
+    // --- State & Persistence ---
+    const STATE = {
+      atp: 1200,
+      highestWave: 1,
+      isVip: false,
+      redeemedCodes: [],
+      soundSfx: true,
+      soundBgm: true,
+      particles: true,
+      selectedCellType: 'plant', // 'plant' or 'animal'
+      activeTowerType: 'ribosome',
+      speed: 1,
+      isPaused: false,
+      inGame: false
+    };
+
+    // Load saved preferences if available
+    try {
+      const saved = localStorage.getItem('cellular_guard_data');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        Object.assign(STATE, parsed);
+        // Reset transient flags
+        STATE.inGame = false;
+        STATE.isPaused = false;
+        STATE.speed = 1;
+      }
+    } catch (e) {
+      console.warn("Storage not accessible:", e);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem('cellular_guard_data', JSON.stringify({
+          atp: STATE.atp,
+          highestWave: STATE.highestWave,
+          isVip: STATE.isVip,
+          redeemedCodes: STATE.redeemedCodes,
+          soundSfx: STATE.soundSfx,
+          soundBgm: STATE.soundBgm,
+          particles: STATE.particles,
+          selectedCellType: STATE.selectedCellType
+        }));
+      } catch (e) {}
+    }
+
+    // --- Web Audio Synthesizer (No external assets required!) ---
+    class BioAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.bgmOsc = null;
+        this.bgmGain = null;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            this.ctx = new AudioCtx();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playSfx(type) {
+        if (!STATE.soundSfx) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+
+        if (type === 'dart') {
+          // Sharp high-pitched peptide dart
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(620, now);
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.12);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        } else if (type === 'acid') {
+          // Bubbly splash
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(240, now);
+          osc.frequency.linearRampToValueAtTime(480, now + 0.08);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.22);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else if (type === 'freeze') {
+          // Soft resonant crystalline ping
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(900, now);
+          osc.frequency.exponentialRampToValueAtTime(350, now + 0.25);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'beam') {
+          // Heavy macrophage hum
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(110, now);
+          osc.frequency.linearRampToValueAtTime(75, now + 0.3);
+          gain.gain.setValueAtTime(0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'pop') {
+          // Pathogen eliminated
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(60, now + 0.15);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'vip') {
+          // Golden fanfare chord
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.08);
+            gain.gain.setValueAtTime(0.18, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.4);
+          });
+        } else if (type === 'hit') {
+          // Membrane breach thud
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(90, now);
+          osc.frequency.exponentialRampToValueAtTime(35, now + 0.2);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        }
+      }
+
+      startAmbientDrone() {
+        if (!STATE.soundBgm) return;
+        this.init();
+        if (!this.ctx || this.bgmOsc) return;
+
+        try {
+          this.bgmOsc = this.ctx.createOscillator();
+          this.bgmGain = this.ctx.createGain();
+          this.bgmOsc.type = 'sine';
+          this.bgmOsc.frequency.setValueAtTime(55, this.ctx.currentTime); // 55Hz deep bio hum
+          this.bgmGain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+          this.bgmOsc.connect(this.bgmGain);
+          this.bgmGain.connect(this.ctx.destination);
+          this.bgmOsc.start();
+        } catch (e) {}
+      }
+
+      stopAmbientDrone() {
+        if (this.bgmOsc) {
+          try {
+            this.bgmOsc.stop();
+            this.bgmOsc.disconnect();
+          } catch (e) {}
+          this.bgmOsc = null;
+        }
+      }
+    }
+
+    const audio = new BioAudioEngine();
+
+    // --- Screen Router ---
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const target = document.getElementById(screenId);
+      if (target) {
+        target.classList.add('active');
+      }
+
+      if (screenId === 'menu-screen') {
+        updateMenuStats();
+      }
+    }
+
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.classList.remove('active');
+    }
+
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modalId = btn.getAttribute('data-close');
+        closeModal(modalId);
+      });
+    });
+
+    // --- Splash Screen Auto-transition (2 seconds) ---
+    let splashDismissed = false;
+    function dismissSplash() {
+      if (splashDismissed) return;
+      splashDismissed = true;
+      audio.init();
+      audio.startAmbientDrone();
+      showScreen('menu-screen');
+    }
+
+    setTimeout(dismissSplash, 2100);
+    document.getElementById('splash-screen').addEventListener('click', dismissSplash);
+
+    // --- Menu UI Updates ---
+    function updateMenuStats() {
+      document.getElementById('menu-atp-count').textContent = STATE.atp.toLocaleString();
+      document.getElementById('menu-high-wave').textContent = `Wave ${STATE.highestWave}`;
+      const vipBadge = document.getElementById('vip-status-badge');
+      if (STATE.isVip) {
+        vipBadge.style.display = 'inline-flex';
+      } else {
+        vipBadge.style.display = 'none';
+      }
+    }
+
+    document.getElementById('btn-play-trigger').addEventListener('click', () => {
+      audio.init();
+      showScreen('cell-select-screen');
+    });
+
+    document.getElementById('btn-encyclo-trigger').addEventListener('click', () => {
+      openModal('encyclo-modal');
+    });
+
+    document.getElementById('btn-promo-trigger').addEventListener('click', () => {
+      openModal('promo-modal');
+    });
+
+    document.getElementById('btn-settings-trigger').addEventListener('click', () => {
+      openModal('settings-modal');
+    });
+
+    // --- Cell Selection Logic ---
+    const plantCard = document.getElementById('card-plant');
+    const animalCard = document.getElementById('card-animal');
+
+    plantCard.addEventListener('click', () => {
+      plantCard.classList.add('selected');
+      animalCard.classList.remove('selected');
+      STATE.selectedCellType = 'plant';
+      audio.playSfx('freeze');
+    });
+
+    animalCard.addEventListener('click', () => {
+      animalCard.classList.add('selected');
+      plantCard.classList.remove('selected');
+      STATE.selectedCellType = 'animal';
+      audio.playSfx('dart');
+    });
+
+    document.getElementById('btn-back-to-menu').addEventListener('click', () => {
+      showScreen('menu-screen');
+    });
+
+    document.getElementById('btn-confirm-cell').addEventListener('click', () => {
+      startGameSession();
+    });
+
+    // --- Promo Code System ---
+    const promoInput = document.getElementById('promo-code-input');
+    const promoBtn = document.getElementById('btn-redeem-code');
+    const promoStatus = document.getElementById('promo-status');
+
+    promoBtn.addEventListener('click', () => {
+      const code = promoInput.value.trim().toUpperCase();
+      if (!code) return;
+
+      if (STATE.redeemedCodes.includes(code)) {
+        showPromoMsg('Code already redeemed on this cellular terminal!', false);
+        return;
+      }
+
+      if (code === 'MARWAN_PRO') {
+        STATE.isVip = true;
+        STATE.atp += 5000;
+        STATE.redeemedCodes.push(code);
+        saveState();
+        updateMenuStats();
+        audio.playSfx('vip');
+        showPromoMsg('★ MARWAN_PRO AUTHENTICATED! VIP Status Activated & +5,000 ATP Granted!', true);
+      } else if (code === 'CYTO2026') {
+        STATE.atp += 2500;
+        STATE.redeemedCodes.push(code);
+        saveState();
+        updateMenuStats();
+        audio.playSfx('vip');
+        showPromoMsg('Cybernetic Cytoplasm Injected! +2,500 ATP Energy.', true);
+      } else if (code === 'CELLWALL') {
+        STATE.atp += 1500;
+        STATE.redeemedCodes.push(code);
+        saveState();
+        updateMenuStats();
+        audio.playSfx('vip');
+        showPromoMsg('Cellulose Reinforcement active! +1,500 ATP & Enhanced Armor.', true);
+      } else if (code === 'MITOCHONDRIA') {
+        STATE.atp += 3000;
+        STATE.redeemedCodes.push(code);
+        saveState();
+        updateMenuStats();
+        audio.playSfx('vip');
+        showPromoMsg('Powerhouse Resonator Charged! +3,000 ATP Energy Surge.', true);
+      } else {
+        showPromoMsg('Invalid authorization code. Check spelling and retry.', false);
+      }
+
+      promoInput.value = '';
+    });
+
+    function showPromoMsg(msg, isSuccess) {
+      promoStatus.textContent = msg;
+      promoStatus.className = 'promo-status-msg ' + (isSuccess ? 'success' : 'error');
+    }
+
+    // --- Encyclopedia Tab Switching ---
+    document.querySelectorAll('.encyclo-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.encyclo-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.getAttribute('data-tab');
+        document.getElementById('tab-pathogens').style.display = tab === 'pathogens' ? 'grid' : 'none';
+        document.getElementById('tab-defenses').style.display = tab === 'defenses' ? 'grid' : 'none';
+      });
+    });
+
+    // --- Settings UI Toggles ---
+    document.getElementById('setting-sfx').checked = STATE.soundSfx;
+    document.getElementById('setting-sfx').addEventListener('change', (e) => {
+      STATE.soundSfx = e.target.checked;
+      saveState();
+    });
+
+    document.getElementById('setting-bgm').checked = STATE.soundBgm;
+    document.getElementById('setting-bgm').addEventListener('change', (e) => {
+      STATE.soundBgm = e.target.checked;
+      if (STATE.soundBgm) audio.startAmbientDrone();
+      else audio.stopAmbientDrone();
+      saveState();
+    });
+
+    document.getElementById('setting-particles').checked = STATE.particles;
+    document.getElementById('setting-particles').addEventListener('change', (e) => {
+      STATE.particles = e.target.checked;
+      saveState();
+    });
+
+    document.getElementById('btn-reset-data').addEventListener('click', () => {
+      if (confirm('Reset all saved ATP, VIP status, and progress?')) {
+        STATE.atp = 1200;
+        STATE.highestWave = 1;
+        STATE.isVip = false;
+        STATE.redeemedCodes = [];
+        saveState();
+        updateMenuStats();
+        closeModal('settings-modal');
+        alert('Simulation data successfully purged.');
+      }
+    });
+
+    /* =====================================================================
+       2D CANVAS GAME ENGINE
+       ===================================================================== */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const fieldWrapper = document.getElementById('field-wrapper');
+
+    let animationFrameId = null;
+    let lastTime = performance.now();
+
+    // Game Session State
+    let game = {
+      maxHealth: 100,
+      currentHealth: 100,
+      atp: 350,
+      wave: 1,
+      waveInProgress: false,
+      waveEnemiesToSpawn: [],
+      spawnTimer: 0,
+      towers: [],
+      enemies: [],
+      projectiles: [],
+      particles: [],
+      floatingTexts: [],
+      selectedTowerForInspect: null,
+      killsThisSession: 0,
+      cellPerks: {
+        damageReduction: 0,
+        fireRateMult: 1.0,
+        atpRegenRate: 10, // per sec
+        costDiscount: 0
+      }
+    };
+
+    // Pathway Waypoints (Normalized coordinates [0..1] across landscape field)
+    const PATH_WAYPOINTS = [
+      { x: -0.05, y: 0.22 },
+      { x: 0.20,  y: 0.22 },
+      { x: 0.20,  y: 0.72 },
+      { x: 0.45,  y: 0.72 },
+      { x: 0.45,  y: 0.30 },
+      { x: 0.70,  y: 0.30 },
+      { x: 0.70,  y: 0.75 },
+      { x: 0.95,  y: 0.75 },
+      { x: 1.05,  y: 0.50 }
+    ];
+
+    // Grid System for Placing Towers
+    const GRID_COLS = 18;
+    const GRID_ROWS = 10;
+    let gridSlots = []; // valid build slots
+
+    function resizeCanvas() {
+      const rect = fieldWrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+      canvas.style.width = `${rect.width}px`;
+      canvas.style.height = `${rect.height}px`;
+
+      buildGridSlots(rect.width, rect.height);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function getPixelWaypoints(width, height) {
+      return PATH_WAYPOINTS.map(p => ({
+        x: p.x * width,
+        y: p.y * height
+      }));
+    }
+
+    function buildGridSlots(width, height) {
+      gridSlots = [];
+      const cellW = width / GRID_COLS;
+      const cellH = height / GRID_ROWS;
+      const waypoints = getPixelWaypoints(width, height);
+
+      for (let c = 1; c < GRID_COLS - 1; c++) {
+        for (let r = 1; r < GRID_ROWS - 1; r++) {
+          const centerX = (c + 0.5) * cellW;
+          const centerY = (r + 0.5) * cellH;
+
+          // Check if too close to path line segments
+          let tooClose = false;
+          for (let i = 0; i < waypoints.length - 1; i++) {
+            const p1 = waypoints[i];
+            const p2 = waypoints[i + 1];
+            const dist = distToSegment({ x: centerX, y: centerY }, p1, p2);
+            if (dist < Math.max(cellW, cellH) * 0.95) {
+              tooClose = true;
+              break;
+            }
+          }
+
+          if (!tooClose) {
+            gridSlots.push({
+              col: c,
+              row: r,
+              x: centerX,
+              y: centerY,
+              radius: Math.min(cellW, cellH) * 0.42,
+              occupied: null
+            });
+          }
+        }
+      }
+    }
+
+    function distToSegment(p, v, w) {
+      const l2 = (v.x - w.x) * (v.x - w.x) + (v.y - w.y) * (v.y - w.y);
+      if (l2 === 0) return Math.hypot(p.x - v.x, p.y - v.y);
+      let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+    }
+
+    // --- Tower Definitions ---
+    const TOWER_SPECS = {
+      ribosome: {
+        name: 'Ribosome Synthesizer',
+        symbol: '🎯',
+        cost: 100,
+        range: 115,
+        damage: 18,
+        fireRate: 1.5, // shots/sec
+        bulletSpeed: 380,
+        color: '#38bdf8',
+        accent: '#0284c7',
+        bulletType: 'dart',
+        desc: 'Rapid peptide darts, excels against swift virus swarms.'
+      },
+      lysosome: {
+        name: 'Lysosome Cannon',
+        symbol: '🧪',
+        cost: 150,
+        range: 105,
+        damage: 32,
+        splashRadius: 40,
+        fireRate: 0.8,
+        bulletSpeed: 260,
+        color: '#f59e0b',
+        accent: '#b45309',
+        bulletType: 'acid',
+        desc: 'Acidic enzyme bursts that melt bacterial capsules in an AoE splash.'
+      },
+      antibody: {
+        name: 'Antibody Crosslinker',
+        symbol: '❄️',
+        cost: 175,
+        range: 125,
+        damage: 12,
+        slowPercent: 0.5,
+        slowDuration: 2.5,
+        fireRate: 1.0,
+        bulletSpeed: 340,
+        color: '#c084fc',
+        accent: '#9333ea',
+        bulletType: 'antibody',
+        desc: 'Chains glycoproteins to slow pathogen velocity.'
+      },
+      macrophage: {
+        name: 'Macrophage Sentry',
+        symbol: '🛡️',
+        cost: 250,
+        range: 130,
+        damage: 65,
+        fireRate: 0.6,
+        bulletSpeed: 420,
+        color: '#ef4444',
+        accent: '#b91c1c',
+        bulletType: 'beam',
+        desc: 'Devastating phagocytic strikes against heavily armored spores.'
+      },
+      booster: {
+        name: 'Mitochondria Booster',
+        symbol: '⚡',
+        cost: 200,
+        range: 95,
+        damage: 0,
+        buffRate: 0.35, // 35% speed buff to adjacent
+        passiveAtp: 4,  // 4 ATP every 3 seconds
+        fireRate: 0.33,
+        color: '#10b981',
+        accent: '#047857',
+        bulletType: 'buff',
+        desc: 'Powerhouse organelle that accelerates surrounding defenses and yields ATP.'
+      }
+    };
+
+    // --- Enemy (Pathogen) Archetypes ---
+    const ENEMY_SPECS = {
+      phage: {
+        name: 'Bacteriophage',
+        hp: 45,
+        speed: 85,
+        radius: 12,
+        bounty: 15,
+        weakness: 'dart',
+        color: '#38bdf8',
+        shape: 'phage'
+      },
+      coccus: {
+        name: 'Streptococcus',
+        hp: 95,
+        speed: 55,
+        radius: 15,
+        bounty: 25,
+        weakness: 'acid',
+        color: '#f59e0b',
+        shape: 'coccus'
+      },
+      bacillus: {
+        name: 'Bacillus',
+        hp: 140,
+        speed: 65,
+        radius: 16,
+        bounty: 35,
+        weakness: 'antibody',
+        color: '#ec4899',
+        shape: 'bacillus'
+      },
+      spore: {
+        name: 'Aspergillus Spore',
+        hp: 260,
+        speed: 40,
+        radius: 20,
+        bounty: 55,
+        weakness: 'beam',
+        color: '#a855f7',
+        shape: 'spore'
+      },
+      boss: {
+        name: 'Apex Cytomegalo-Titan',
+        hp: 950,
+        speed: 32,
+        radius: 28,
+        bounty: 250,
+        weakness: 'beam',
+        color: '#ef4444',
+        shape: 'boss'
+      }
+    };
+
+    // --- Start Game Session ---
+    function startGameSession() {
+      STATE.inGame = true;
+      STATE.isPaused = false;
+      STATE.speed = 1;
+      document.getElementById('btn-game-speed').textContent = '1x';
+      document.getElementById('btn-game-pause').textContent = '⏸';
+
+      // Set cell perks based on selected cell type
+      if (STATE.selectedCellType === 'plant') {
+        game.maxHealth = 150;
+        game.currentHealth = 150;
+        game.cellPerks.damageReduction = 0.30;
+        game.cellPerks.fireRateMult = 1.0;
+        game.cellPerks.atpRegenRate = 8;
+        game.cellPerks.costDiscount = 0;
+      } else { // animal cell
+        game.maxHealth = 100;
+        game.currentHealth = 100;
+        game.cellPerks.damageReduction = 0;
+        game.cellPerks.fireRateMult = 1.20; // 20% faster
+        game.cellPerks.atpRegenRate = 14;   // +40% passive
+        game.cellPerks.costDiscount = 0.15; // 15% discount on phage/acid
+      }
+
+      // If VIP, grant +25% bonus membrane shields
+      if (STATE.isVip) {
+        game.maxHealth = Math.round(game.maxHealth * 1.25);
+        game.currentHealth = game.maxHealth;
+      }
+
+      game.atp = 400 + (STATE.isVip ? 200 : 0);
+      game.wave = 1;
+      game.waveInProgress = false;
+      game.waveEnemiesToSpawn = [];
+      game.spawnTimer = 0;
+      game.towers = [];
+      game.enemies = [];
+      game.projectiles = [];
+      game.particles = [];
+      game.floatingTexts = [];
+      game.selectedTowerForInspect = null;
+      game.killsThisSession = 0;
+
+      hideInspector();
+      showScreen('game-screen');
+      resizeCanvas();
+      updateGameHUD();
+
+      lastTime = performance.now();
+      if (!animationFrameId) {
+        animationFrameId = requestAnimationFrame(gameLoop);
+      }
+    }
+
+    // --- Tower Selection Dock Buttons ---
+    document.querySelectorAll('.tower-card-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tower-card-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        STATE.activeTowerType = btn.getAttribute('data-tower');
+        hideInspector();
+      });
+    });
+
+    // --- Call Next Wave ---
+    const callWaveBtn = document.getElementById('btn-call-wave');
+    callWaveBtn.addEventListener('click', () => {
+      if (!game.waveInProgress) {
+        startWave();
+      }
+    });
+
+    function startWave() {
+      game.waveInProgress = true;
+      callWaveBtn.style.opacity = '0.5';
+      callWaveBtn.style.pointerEvents = 'none';
+
+      // Build wave roster
+      const wave = game.wave;
+      const roster = [];
+
+      // Wave composition scaling
+      const phageCount = 4 + wave * 3;
+      const coccusCount = Math.floor(wave * 1.8);
+      const bacillusCount = wave >= 3 ? Math.floor((wave - 2) * 1.5) : 0;
+      const sporeCount = wave >= 5 ? Math.floor((wave - 4) * 1.2) : 0;
+      const isBossWave = wave % 5 === 0;
+
+      for (let i = 0; i < phageCount; i++) roster.push('phage');
+      for (let i = 0; i < coccusCount; i++) roster.push('coccus');
+      for (let i = 0; i < bacillusCount; i++) roster.push('bacillus');
+      for (let i = 0; i < sporeCount; i++) roster.push('spore');
+      if (isBossWave) roster.push('boss');
+
+      // Shuffle roster slightly for variety while keeping boss at the rear
+      const mainEnemies = isBossWave ? roster.slice(0, -1) : roster;
+      for (let i = mainEnemies.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mainEnemies[i], mainEnemies[j]] = [mainEnemies[j], mainEnemies[i]];
+      }
+      if (isBossWave) mainEnemies.push('boss');
+
+      game.waveEnemiesToSpawn = mainEnemies;
+      game.spawnTimer = 0.5;
+
+      audio.playSfx('vip');
+      showFloatingText("WAVE " + wave + " INCOMING", canvas.width / 2 / (window.devicePixelRatio || 1), 60, '#f59e0b', 24);
+    }
+
+    // --- Placement & Interaction on Canvas ---
+    canvas.addEventListener('click', handleCanvasClick);
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length > 0) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        handleCanvasInput(touch.clientX - rect.left, touch.clientY - rect.top);
+      }
+    }, { passive: true });
+
+    function handleCanvasClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      handleCanvasInput(e.clientX - rect.left, e.clientY - rect.top);
+    }
+
+    function handleCanvasInput(clickX, clickY) {
+      if (!STATE.inGame) return;
+
+      // 1. Check if clicking an existing tower to inspect
+      for (const t of game.towers) {
+        const dist = Math.hypot(clickX - t.x, clickY - t.y);
+        if (dist <= t.radius + 6) {
+          showInspector(t);
+          audio.playSfx('freeze');
+          return;
+        }
+      }
+
+      // 2. Otherwise, check if clicking a vacant grid slot to build
+      let closestSlot = null;
+      let minDist = 999;
+      for (const slot of gridSlots) {
+        const d = Math.hypot(clickX - slot.x, clickY - slot.y);
+        if (d < slot.radius * 1.3 && d < minDist) {
+          minDist = d;
+          closestSlot = slot;
+        }
+      }
+
+      if (closestSlot && !closestSlot.occupied) {
+        buildTower(closestSlot, STATE.activeTowerType);
+      } else {
+        hideInspector();
+      }
+    }
+
+    function getTowerCost(type) {
+      const base = TOWER_SPECS[type].cost;
+      if (STATE.selectedCellType === 'animal' && (type === 'macrophage' || type === 'lysosome')) {
+        return Math.round(base * 0.85);
+      }
+      return base;
+    }
+
+    function buildTower(slot, type) {
+      const cost = getTowerCost(type);
+      if (game.atp < cost) {
+        showFloatingText("NOT ENOUGH ATP", slot.x, slot.y - 20, '#ef4444', 16);
+        audio.playSfx('hit');
+        return;
+      }
+
+      game.atp -= cost;
+      const spec = TOWER_SPECS[type];
+      const newTower = {
+        id: Math.random().toString(36).substring(2, 9),
+        type: type,
+        col: slot.col,
+        row: slot.row,
+        x: slot.x,
+        y: slot.y,
+        radius: slot.radius,
+        level: 1,
+        kills: 0,
+        cooldown: 0,
+        spec: spec,
+        range: spec.range,
+        damage: spec.damage,
+        fireRate: spec.fireRate * game.cellPerks.fireRateMult,
+        slot: slot
+      };
+
+      slot.occupied = newTower;
+      game.towers.push(newTower);
+
+      // Spawn construction particles
+      createSparks(slot.x, slot.y, spec.color, 14);
+      audio.playSfx('freeze');
+      updateGameHUD();
+      showInspector(newTower);
+    }
+
+    // --- Tower Inspector Panel ---
+    const towerInsp = document.getElementById('tower-inspector');
+    const inspName = document.getElementById('insp-name');
+    const inspLvl = document.getElementById('insp-lvl');
+    const inspDmg = document.getElementById('insp-dmg');
+    const inspRange = document.getElementById('insp-range');
+    const inspRate = document.getElementById('insp-rate');
+    const inspKills = document.getElementById('insp-kills');
+    const inspUpBtn = document.getElementById('btn-insp-upgrade');
+    const inspSellBtn = document.getElementById('btn-insp-sell');
+
+    function showInspector(tower) {
+      game.selectedTowerForInspect = tower;
+      towerInsp.style.display = 'flex';
+      updateInspectorUI();
+    }
+
+    function hideInspector() {
+      game.selectedTowerForInspect = null;
+      towerInsp.style.display = 'none';
+    }
+
+    function updateInspectorUI() {
+      const t = game.selectedTowerForInspect;
+      if (!t) return;
+
+      const upCost = Math.round(t.spec.cost * (0.8 + t.level * 0.5));
+      const sellRefund = Math.round(t.spec.cost * 0.65 * t.level);
+
+      inspName.textContent = t.spec.name;
+      inspLvl.textContent = `LVL ${t.level}`;
+      inspDmg.textContent = t.damage;
+      inspRange.textContent = Math.round(t.range);
+      inspRate.textContent = t.fireRate.toFixed(1) + '/s';
+      inspKills.textContent = t.kills;
+
+      inspUpBtn.textContent = `Up (${upCost}⚡)`;
+      inspSellBtn.textContent = `Sell (${sellRefund}⚡)`;
+    }
+
+    inspUpBtn.addEventListener('click', () => {
+      const t = game.selectedTowerForInspect;
+      if (!t) return;
+      const upCost = Math.round(t.spec.cost * (0.8 + t.level * 0.5));
+      if (game.atp < upCost) {
+        showFloatingText("NEED " + upCost + " ATP", t.x, t.y - 30, '#ef4444', 16);
+        return;
+      }
+      game.atp -= upCost;
+      t.level++;
+      t.damage = Math.round(t.damage * 1.45);
+      t.range = Math.round(t.range * 1.15);
+      t.fireRate = t.fireRate * 1.1;
+
+      createSparks(t.x, t.y, '#38bdf8', 18);
+      audio.playSfx('vip');
+      updateInspectorUI();
+      updateGameHUD();
+    });
+
+    inspSellBtn.addEventListener('click', () => {
+      const t = game.selectedTowerForInspect;
+      if (!t) return;
+      const sellRefund = Math.round(t.spec.cost * 0.65 * t.level);
+      game.atp += sellRefund;
+      t.slot.occupied = null;
+      game.towers = game.towers.filter(item => item !== t);
+
+      createSparks(t.x, t.y, '#ef4444', 12);
+      audio.playSfx('pop');
+      hideInspector();
+      updateGameHUD();
+    });
+
+    // --- HUD Controls ---
+    document.getElementById('btn-game-speed').addEventListener('click', (e) => {
+      if (STATE.speed === 1) STATE.speed = 2;
+      else if (STATE.speed === 2) STATE.speed = 3;
+      else STATE.speed = 1;
+      e.target.textContent = STATE.speed + 'x';
+    });
+
+    document.getElementById('btn-game-pause').addEventListener('click', (e) => {
+      STATE.isPaused = !STATE.isPaused;
+      e.target.textContent = STATE.isPaused ? '▶' : '⏸';
+    });
+
+    document.getElementById('btn-game-exit').addEventListener('click', () => {
+      if (confirm('Abandon ongoing cellular defense and return to menu?')) {
+        STATE.inGame = false;
+        showScreen('menu-screen');
+      }
+    });
+
+    // --- End Session Dialogs ---
+    document.getElementById('btn-end-retry').addEventListener('click', () => {
+      closeModal('game-over-modal');
+      startGameSession();
+    });
+
+    document.getElementById('btn-end-menu').addEventListener('click', () => {
+      closeModal('game-over-modal');
+      STATE.inGame = false;
+      showScreen('menu-screen');
+    });
+
+    function triggerGameOver(victory) {
+      STATE.inGame = false;
+      const modal = document.getElementById('game-over-modal');
+      const title = document.getElementById('end-title');
+      const desc = document.getElementById('end-desc');
+      const icon = document.getElementById('end-icon');
+
+      if (victory) {
+        title.textContent = "CELLULAR INTEGRITY PRESERVED!";
+        title.style.color = "#10b981";
+        icon.textContent = "🏆";
+        desc.textContent = "All pathogen waves successfully eradicated! The host cellular core has developed permanent adaptive immunity.";
+      } else {
+        title.textContent = "CELLULAR MEMBRANE BREACHED";
+        title.style.color = "#ef4444";
+        icon.textContent = "⚠️";
+        desc.textContent = "Pathogens punctured through the lipid bilayer and disrupted cytoplasmic homeostasis.";
+        audio.playSfx('hit');
+      }
+
+      document.getElementById('end-waves').textContent = "Wave " + game.wave;
+      document.getElementById('end-kills').textContent = game.killsThisSession;
+
+      // Update state high wave and persist
+      if (game.wave > STATE.highestWave) {
+        STATE.highestWave = game.wave;
+      }
+      STATE.atp += Math.round(game.killsThisSession * 5);
+      saveState();
+
+      openModal('game-over-modal');
+    }
+
+    // --- Floating Damage/Status Text ---
+    function showFloatingText(text, x, y, color = '#ffffff', size = 14) {
+      game.floatingTexts.push({
+        text,
+        x,
+        y,
+        color,
+        size,
+        life: 1.0,
+        maxLife: 1.0
+      });
+    }
+
+    function createSparks(x, y, color, count = 10) {
+      if (!STATE.particles) return;
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 25 + Math.random() * 80;
+        game.particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          radius: 1.5 + Math.random() * 2.5,
+          color,
+          life: 0.5 + Math.random() * 0.4
+        });
+      }
+    }
+
+    // --- Main Game Loop ---
+    function gameLoop(now) {
+      animationFrameId = requestAnimationFrame(gameLoop);
+
+      const dtRaw = (now - lastTime) / 1000;
+      lastTime = now;
+      const dt = Math.min(dtRaw, 0.1) * (STATE.isPaused ? 0 : STATE.speed);
+
+      if (STATE.inGame) {
+        update(dt);
+        render();
+      }
+    }
+
+    // --- Update Simulation ---
+    function update(dt) {
+      if (dt <= 0) return;
+
+      const rect = fieldWrapper.getBoundingClientRect();
+      const waypoints = getPixelWaypoints(rect.width, rect.height);
+
+      // Passive ATP generation
+      game.atp += game.cellPerks.atpRegenRate * dt * 0.5;
+
+      // 1. Spawning Enemies
+      if (game.waveInProgress && game.waveEnemiesToSpawn.length > 0) {
+        game.spawnTimer -= dt;
+        if (game.spawnTimer <= 0) {
+          const enemyType = game.waveEnemiesToSpawn.shift();
+          spawnEnemy(enemyType, waypoints[0]);
+          game.spawnTimer = 0.9 / (1 + game.wave * 0.05);
+        }
+      }
+
+      // Check if wave finished
+      if (game.waveInProgress && game.waveEnemiesToSpawn.length === 0 && game.enemies.length === 0) {
+        game.waveInProgress = false;
+        callWaveBtn.style.opacity = '1';
+        callWaveBtn.style.pointerEvents = 'auto';
+
+        // Wave clear bonuses
+        const waveBonus = 75 + game.wave * 35;
+        game.atp += waveBonus;
+        showFloatingText(`+${waveBonus} ATP WAVE CLEAR!`, rect.width / 2, rect.height / 2, '#38bdf8', 20);
+
+        // Plant Cell Perk: Regenerate 1% membrane health per cleared wave
+        if (STATE.selectedCellType === 'plant' && game.currentHealth < game.maxHealth) {
+          game.currentHealth = Math.min(game.maxHealth, game.currentHealth + Math.round(game.maxHealth * 0.03));
+        }
+
+        game.wave++;
+        updateGameHUD();
+        audio.playSfx('vip');
+
+        if (game.wave > 25) {
+          triggerGameOver(true);
+        }
+      }
+
+      // 2. Update Enemies Movement along Waypoints
+      for (let i = game.enemies.length - 1; i >= 0; i--) {
+        const e = game.enemies[i];
+
+        // Status effects (slow)
+        if (e.slowTimer > 0) {
+          e.slowTimer -= dt;
+          if (e.slowTimer <= 0) e.speedMult = 1.0;
+        }
+
+        const target = waypoints[e.waypointIdx];
+        const dx = target.x - e.x;
+        const dy = target.y - e.y;
+        const dist = Math.hypot(dx, dy);
+        const step = e.spec.speed * e.speedMult * dt;
+
+        if (dist <= step) {
+          e.x = target.x;
+          e.y = target.y;
+          e.waypointIdx++;
+
+          // Pathogen reaches cellular nucleus/membrane exit!
+          if (e.waypointIdx >= waypoints.length) {
+            let dmg = e.spec.shape === 'boss' ? 35 : 10;
+            // Apply plant cell wall damage reduction if selected
+            dmg = Math.max(1, Math.round(dmg * (1 - game.cellPerks.damageReduction)));
+
+            game.currentHealth -= dmg;
+            createSparks(e.x, e.y, '#ef4444', 20);
+            audio.playSfx('hit');
+            game.enemies.splice(i, 1);
+            updateGameHUD();
+
+            if (game.currentHealth <= 0) {
+              game.currentHealth = 0;
+              triggerGameOver(false);
+              return;
+            }
+            continue;
+          }
+        } else {
+          e.x += (dx / dist) * step;
+          e.y += (dy / dist) * step;
+        }
+      }
+
+      // 3. Update Towers & Target Selection
+      for (const t of game.towers) {
+        if (t.cooldown > 0) {
+          t.cooldown -= dt;
+        }
+
+        // Booster tower pulses ATP and buffs adjacent
+        if (t.type === 'booster') {
+          if (t.cooldown <= 0) {
+            t.cooldown = 1 / t.fireRate;
+            game.atp += t.spec.passiveAtp;
+            createSparks(t.x, t.y, '#10b981', 4);
+          }
+          continue;
+        }
+
+        // Find targets in range
+        if (t.cooldown <= 0) {
+          let bestTarget = null;
+          let bestProgress = -1;
+
+          for (const e of game.enemies) {
+            const d = Math.hypot(e.x - t.x, e.y - t.y);
+            if (d <= t.range) {
+              // Priority: farthest along path
+              const progress = e.waypointIdx * 10000 - Math.hypot(waypoints[e.waypointIdx]?.x - e.x || 0, waypoints[e.waypointIdx]?.y - e.y || 0);
+              if (progress > bestProgress) {
+                bestProgress = progress;
+                bestTarget = e;
+              }
+            }
+          }
+
+          if (bestTarget) {
+            fireTower(t, bestTarget);
+            t.cooldown = 1 / t.fireRate;
+          }
+        }
+      }
+
+      // 4. Update Projectiles
+      for (let i = game.projectiles.length - 1; i >= 0; i--) {
+        const p = game.projectiles[i];
+
+        // Move projectile toward target or last position
+        const targetX = p.target.x !== undefined ? p.target.x : p.destX;
+        const targetY = p.target.y !== undefined ? p.target.y : p.destY;
+        const dx = targetX - p.x;
+        const dy = targetY - p.y;
+        const dist = Math.hypot(dx, dy);
+        const step = p.speed * dt;
+
+        if (dist <= step || dist < 8) {
+          // Hit target!
+          hitTarget(p, p.target);
+          game.projectiles.splice(i, 1);
+        } else {
+          p.x += (dx / dist) * step;
+          p.y += (dy / dist) * step;
+        }
+      }
+
+      // 5. Update Particles
+      for (let i = game.particles.length - 1; i >= 0; i--) {
+        const part = game.particles[i];
+        part.x += part.vx * dt;
+        part.y += part.vy * dt;
+        part.life -= dt;
+        if (part.life <= 0) {
+          game.particles.splice(i, 1);
+        }
+      }
+
+      // 6. Update Floating Texts
+      for (let i = game.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = game.floatingTexts[i];
+        ft.y -= 25 * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) {
+          game.floatingTexts.splice(i, 1);
+        }
+      }
+
+      updateGameHUD();
+    }
+
+    function spawnEnemy(type, startPos) {
+      const spec = ENEMY_SPECS[type];
+      const scaling = 1 + (game.wave - 1) * 0.16;
+      game.enemies.push({
+        id: Math.random().toString(36).substring(2, 9),
+        type,
+        spec,
+        x: startPos.x,
+        y: startPos.y,
+        maxHp: Math.round(spec.hp * scaling),
+        hp: Math.round(spec.hp * scaling),
+        waypointIdx: 1,
+        speedMult: 1.0,
+        slowTimer: 0,
+        pulseAnim: Math.random() * 10
+      });
+    }
+
+    function fireTower(tower, target) {
+      if (tower.spec.bulletType === 'beam') {
+        // Instant macrophage beam
+        audio.playSfx('beam');
+        hitTarget({
+          type: 'beam',
+          tower: tower,
+          damage: tower.damage,
+          color: tower.spec.color
+        }, target);
+        // Visual beam ray
+        game.projectiles.push({
+          isRay: true,
+          x1: tower.x,
+          y1: tower.y,
+          x2: target.x,
+          y2: target.y,
+          color: tower.spec.color,
+          life: 0.15
+        });
+      } else {
+        // Standard projectile dart, acid, or antibody
+        audio.playSfx(tower.spec.bulletType);
+        game.projectiles.push({
+          type: tower.spec.bulletType,
+          tower: tower,
+          x: tower.x,
+          y: tower.y,
+          speed: tower.spec.bulletSpeed,
+          damage: tower.damage,
+          color: tower.spec.color,
+          target: target,
+          destX: target.x,
+          destY: target.y,
+          splashRadius: tower.spec.splashRadius || 0,
+          slowPercent: tower.spec.slowPercent || 0,
+          slowDuration: tower.spec.slowDuration || 0
+        });
+      }
+    }
+
+    function hitTarget(proj, target) {
+      if (!target || target.hp <= 0) return;
+
+      // Weakness bonus multiplier
+      let mult = 1.0;
+      if (target.spec.weakness === proj.type) {
+        mult = 1.6; // 60% bonus damage when targeting physiological weakness!
+        showFloatingText("WEAKNESS EXPLOITED!", target.x, target.y - 18, '#38bdf8', 12);
+      }
+
+      const totalDmg = Math.round(proj.damage * mult);
+      target.hp -= totalDmg;
+      showFloatingText(`-${totalDmg}`, target.x, target.y - 8, proj.color || '#fff', 13);
+      createSparks(target.x, target.y, proj.color || '#fff', 6);
+
+      // Slow effect
+      if (proj.slowPercent && proj.slowPercent > 0) {
+        target.speedMult = 1 - proj.slowPercent;
+        target.slowTimer = proj.slowDuration;
+      }
+
+      // Splash effect for acid
+      if (proj.splashRadius && proj.splashRadius > 0) {
+        createSparks(target.x, target.y, '#f59e0b', 14);
+        for (const other of game.enemies) {
+          if (other !== target) {
+            const d = Math.hypot(other.x - target.x, other.y - target.y);
+            if (d <= proj.splashRadius) {
+              const splashDmg = Math.round(totalDmg * 0.6);
+              other.hp -= splashDmg;
+              showFloatingText(`-${splashDmg}`, other.x, other.y - 8, '#f59e0b', 11);
+            }
+          }
+        }
+      }
+
+      // Check enemy demise
+      if (target.hp <= 0) {
+        eliminateEnemy(target, proj.tower);
+      }
+    }
+
+    function eliminateEnemy(enemy, tower) {
+      const idx = game.enemies.indexOf(enemy);
+      if (idx !== -1) {
+        game.enemies.splice(idx, 1);
+        game.killsThisSession++;
+        if (tower) tower.kills++;
+
+        const bounty = enemy.spec.bounty;
+        game.atp += bounty;
+        showFloatingText(`+${bounty}⚡`, enemy.x, enemy.y, '#38bdf8', 15);
+        createSparks(enemy.x, enemy.y, enemy.spec.color, 16);
+        audio.playSfx('pop');
+      }
+    }
+
+    // --- HUD Updating ---
+    function updateGameHUD() {
+      // Membrane integrity
+      const pct = Math.max(0, Math.round((game.currentHealth / game.maxHealth) * 100));
+      document.getElementById('health-percent-text').textContent = `${pct}%`;
+      const fillBar = document.getElementById('health-bar-fill');
+      fillBar.style.width = `${pct}%`;
+
+      const badge = document.getElementById('health-status-badge');
+      if (pct > 60) {
+        badge.textContent = "NOMINAL";
+        badge.style.color = "#34d399";
+        badge.style.borderColor = "#10b981";
+      } else if (pct > 25) {
+        badge.textContent = "WARNING";
+        badge.style.color = "#fbbf24";
+        badge.style.borderColor = "#f59e0b";
+      } else {
+        badge.textContent = "CRITICAL";
+        badge.style.color = "#f87171";
+        badge.style.borderColor = "#ef4444";
+      }
+
+      // ATP & Wave counts
+      document.getElementById('game-atp-val').textContent = Math.round(game.atp);
+      document.getElementById('game-wave-val').textContent = `Wave ${game.wave}`;
+
+      // Update affordability on dock buttons
+      document.querySelectorAll('.tower-card-btn').forEach(btn => {
+        const type = btn.getAttribute('data-tower');
+        const cost = getTowerCost(type);
+        if (game.atp < cost) {
+          btn.classList.add('cannot-afford');
+        } else {
+          btn.classList.remove('cannot-afford');
+        }
+      });
+    }
+
+    /* =====================================================================
+       2D CANVAS RENDERING ENGINE
+       ===================================================================== */
+    function render() {
+      const rect = fieldWrapper.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // 1. Draw Organic Deep Cytoplasm Backdrop
+      renderCytoplasmBackground(w, h);
+
+      // 2. Draw Cellular Pathway
+      renderPathways(w, h);
+
+      // 3. Draw Build Slots / Towers
+      renderSlotsAndTowers(w, h);
+
+      // 4. Draw Pathogens (Enemies)
+      renderEnemies();
+
+      // 5. Draw Projectiles & Lasers
+      renderProjectiles();
+
+      // 6. Draw Particle Sparks
+      renderParticles();
+
+      // 7. Draw Floating Numbers
+      renderFloatingTexts();
+    }
+
+    function renderCytoplasmBackground(w, h) {
+      // Subtle glowing cytoplasm organelles in background
+      const grad = ctx.createRadialGradient(w * 0.5, h * 0.5, 50, w * 0.5, h * 0.5, Math.max(w, h) * 0.8);
+      grad.addColorStop(0, '#101726');
+      grad.addColorStop(1, '#0b0f19');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle biological fluid filaments
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.03)';
+      ctx.lineWidth = 1;
+      const step = 45;
+      for (let x = 0; x < w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+      for (let y = 0; y < h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+    }
+
+    function renderPathways(w, h) {
+      const waypoints = getPixelWaypoints(w, h);
+      if (waypoints.length < 2) return;
+
+      // Outer glowing pathway boundary
+      ctx.beginPath();
+      ctx.moveTo(waypoints[0].x, waypoints[0].y);
+      for (let i = 1; i < waypoints.length; i++) {
+        ctx.lineTo(waypoints[i].x, waypoints[i].y);
+      }
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.18)';
+      ctx.lineWidth = 36;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Inner nutrient stream
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.lineWidth = 26;
+      ctx.stroke();
+
+      // Core bioluminescent artery dashed pulse
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 12]);
+      ctx.lineDashOffset = -performance.now() * 0.04;
+      ctx.stroke();
+      ctx.setLineDash([]); // Reset dash
+
+      // End Core (Cellular Nucleus / Vacuole)
+      const endPoint = waypoints[waypoints.length - 1];
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(endPoint.x - 30, endPoint.y, 38, 0, Math.PI * 2);
+      ctx.fillStyle = STATE.selectedCellType === 'plant' ? 'rgba(16, 185, 129, 0.25)' : 'rgba(56, 189, 248, 0.25)';
+      ctx.fill();
+      ctx.strokeStyle = STATE.selectedCellType === 'plant' ? '#10b981' : '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Nucleus label
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(STATE.selectedCellType === 'plant' ? 'CORE' : 'NUCLEUS', endPoint.x - 30, endPoint.y + 4);
+      ctx.restore();
+    }
+
+    function renderSlotsAndTowers(w, h) {
+      // 1. Draw Vacant Slots
+      for (const slot of gridSlots) {
+        if (!slot.occupied) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(slot.x, slot.y, slot.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(17, 24, 39, 0.5)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 4]);
+          ctx.stroke();
+          ctx.restore();
+        }
+      }
+
+      // 2. Draw Towers
+      for (const t of game.towers) {
+        ctx.save();
+
+        // If selected, draw range indicator circle
+        if (game.selectedTowerForInspect === t) {
+          ctx.beginPath();
+          ctx.arc(t.x, t.y, t.range, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.08)';
+          ctx.fill();
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        }
+
+        // Tower pedestal
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+        ctx.fillStyle = '#111827';
+        ctx.fill();
+        ctx.strokeStyle = t.spec.color;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = t.spec.color;
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // Inner Glyph / Symbol
+        ctx.font = `${Math.round(t.radius * 0.9)}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(t.spec.symbol, t.x, t.y + 1);
+
+        // Level dots on top
+        if (t.level > 1) {
+          for (let i = 0; i < t.level; i++) {
+            ctx.beginPath();
+            ctx.arc(t.x - (t.level - 1) * 4 + i * 8, t.y - t.radius - 4, 2.5, 0, Math.PI * 2);
+            ctx.fillStyle = t.spec.color;
+            ctx.fill();
+          }
+        }
+
+        ctx.restore();
+      }
+    }
+
+    function renderEnemies() {
+      for (const e of game.enemies) {
+        ctx.save();
+        ctx.translate(e.x, e.y);
+
+        // Unique shape rendering per pathogen
+        const r = e.spec.radius;
+
+        if (e.spec.shape === 'phage') {
+          // Bacteriophage T4: Icosahedral head + tail pins
+          ctx.strokeStyle = e.spec.color;
+          ctx.fillStyle = '#0f172a';
+          ctx.lineWidth = 2;
+
+          // Head hexagon
+          ctx.beginPath();
+          for (let i = 0; i < 6; i++) {
+            const angle = (i * Math.PI) / 3;
+            const hx = Math.cos(angle) * (r * 0.7);
+            const hy = Math.sin(angle) * (r * 0.7) - 3;
+            if (i === 0) ctx.moveTo(hx, hy);
+            else ctx.lineTo(hx, hy);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+
+          // Tail fibers
+          ctx.beginPath();
+          ctx.moveTo(-r * 0.5, r * 0.8);
+          ctx.lineTo(0, r * 0.3);
+          ctx.lineTo(r * 0.5, r * 0.8);
+          ctx.stroke();
+
+        } else if (e.spec.shape === 'coccus') {
+          // Streptococcus: Cluster beads
+          ctx.fillStyle = e.spec.color;
+          ctx.beginPath();
+          ctx.arc(-r * 0.35, 0, r * 0.5, 0, Math.PI * 2);
+          ctx.arc(r * 0.35, 0, r * 0.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#fff';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+        } else if (e.spec.shape === 'bacillus') {
+          // Bacillus rod capsule
+          ctx.fillStyle = e.spec.color;
+          ctx.beginPath();
+          ctx.roundRect(-r * 0.9, -r * 0.5, r * 1.8, r, r * 0.4);
+          ctx.fill();
+          ctx.strokeStyle = '#f472b6';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+        } else if (e.spec.shape === 'spore') {
+          // Aspergillus Spore: Spiked ball
+          ctx.fillStyle = e.spec.color;
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.75, 0, Math.PI * 2);
+          ctx.fill();
+          // Radiating spines
+          ctx.strokeStyle = '#c084fc';
+          ctx.lineWidth = 2;
+          for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI) / 4;
+            ctx.beginPath();
+            ctx.moveTo(Math.cos(angle) * (r * 0.7), Math.sin(angle) * (r * 0.7));
+            ctx.lineTo(Math.cos(angle) * (r * 1.15), Math.sin(angle) * (r * 1.15));
+            ctx.stroke();
+          }
+
+        } else if (e.spec.shape === 'boss') {
+          // Apex Titan: Large pulsating core with outer spiked aura
+          const pulse = Math.sin(performance.now() * 0.005) * 3;
+          ctx.fillStyle = '#450a0a';
+          ctx.beginPath();
+          ctx.arc(0, 0, r + pulse, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = 3;
+          ctx.shadowColor = '#ef4444';
+          ctx.shadowBlur = 15;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+
+          // Inner bio-hazard eye
+          ctx.fillStyle = '#fca5a5';
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Weakness Icon Badge
+        let weakSymbol = '🎯';
+        if (e.spec.weakness === 'acid') weakSymbol = '🧪';
+        if (e.spec.weakness === 'antibody') weakSymbol = '❄️';
+        if (e.spec.weakness === 'beam') weakSymbol = '🛡️';
+
+        ctx.font = '10px sans-serif';
+        ctx.fillText(weakSymbol, 0, -r - 12);
+
+        // Pathogen Health Bar
+        const barW = Math.max(26, r * 1.6);
+        const barH = 3.5;
+        const hpRatio = Math.max(0, e.hp / e.maxHp);
+
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(-barW / 2, -r - 7, barW, barH);
+        ctx.fillStyle = hpRatio > 0.5 ? '#10b981' : (hpRatio > 0.25 ? '#f59e0b' : '#ef4444');
+        ctx.fillRect(-barW / 2, -r - 7, barW * hpRatio, barH);
+
+        ctx.restore();
+      }
+    }
+
+    function renderProjectiles() {
+      for (const p of game.projectiles) {
+        ctx.save();
+        if (p.isRay) {
+          // Instant macrophage ray
+          ctx.strokeStyle = p.color;
+          ctx.lineWidth = 4;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(p.x1, p.y1);
+          ctx.lineTo(p.x2, p.y2);
+          ctx.stroke();
+        } else {
+          // Moving dart/acid/freeze ball
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.type === 'acid' ? 5 : 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    function renderParticles() {
+      for (const part of game.particles) {
+        ctx.save();
+        ctx.fillStyle = part.color;
+        ctx.globalAlpha = Math.max(0, part.life / 0.8);
+        ctx.beginPath();
+        ctx.arc(part.x, part.y, part.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function renderFloatingTexts() {
+      for (const ft of game.floatingTexts) {
+        ctx.save();
+        ctx.fillStyle = ft.color;
+        ctx.font = `bold ${ft.size}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+    }
+
+    // Initial setup on load
+    updateMenuStats();
+    resizeCanvas();
+  </script>
+</body>
+ </html>
